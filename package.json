@@ -1,0 +1,18 @@
+{
+  "name": "herex-col",
+  "version": "1.0.0",
+  "description": "HEREX - Producción de Contenido Digital",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static HTML project - no build step needed'",
+    "lint": "echo 'No linter configured'",
+    "test": "echo 'No tests configured'"
+  },
+  "keywords": [],
+  "author": "Ivan Orozco",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
