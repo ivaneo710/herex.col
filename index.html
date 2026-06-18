@@ -371,6 +371,113 @@ nav{transform:translateZ(0)}
   .wrap{padding:0 16px !important}
 }
 
+
+/* ════════════════════════════════════════════════════════
+   HEREX — ANIMATION + RESPONSIVE FIX (DESKTOP + MOBILE)
+════════════════════════════════════════════════════════ */
+
+/* ── Unified reveal animation (desktop + mobile) ── */
+.rv,.fl,.fr,.su{
+  opacity:0 !important;
+  transform:translateY(32px) !important;
+  transition:opacity .8s cubic-bezier(.16,1,.3,1),
+             transform .8s cubic-bezier(.16,1,.3,1) !important
+}
+.fl{transform:translateX(-44px) !important}
+.fr{transform:translateX(44px) !important}
+.r3{
+  opacity:0 !important;
+  transform:translateY(28px) scale(.96) !important;
+  transition:opacity .9s cubic-bezier(.16,1,.3,1),
+             transform .9s cubic-bezier(.16,1,.3,1) !important
+}
+.rv.on,.fl.on,.fr.on,.r3.on,.su.on{
+  opacity:1 !important;
+  transform:none !important
+}
+.d1{transition-delay:.07s !important}
+.d2{transition-delay:.15s !important}
+.d3{transition-delay:.23s !important}
+.d4{transition-delay:.31s !important}
+.d5{transition-delay:.39s !important}
+
+/* ── Nations flags — always show on desktop ── */
+.nat-c{opacity:1}  /* fallback if JS delayed */
+.nat-flag{font-size:32px !important;display:block !important}
+.nat-name{display:block !important;font-size:12px !important}
+
+/* ── Section layout — NO contain, NO forced transform ── */
+section{
+  contain:none !important;
+  transform:none !important;
+  will-change:auto !important
+}
+
+/* ── Nav on desktop ── */
+@media(min-width:901px){
+  nav{
+    backdrop-filter:blur(18px) !important;
+    -webkit-backdrop-filter:blur(18px) !important
+  }
+  .nls .nl{display:flex !important}
+}
+
+/* ── Desktop: show all nav links ── */
+@media(min-width:901px){
+  .nls{display:flex;align-items:center;gap:28px}
+  .nls .nl{display:block !important;color:var(--lgray)}
+}
+
+/* ── Hero video responsive ── */
+#hero-vid{
+  width:100% !important;
+  display:block !important;
+  object-fit:cover !important
+}
+@media(max-width:768px){
+  #hero-vid{
+    min-height:60vw;
+    object-position:center center !important
+  }
+}
+
+/* ── Smooth mobile scroll ── */
+html{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+body{overflow-x:hidden}
+@media(max-width:900px){
+  nav{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    background:rgba(9,9,12,.98) !important
+  }
+}
+
+/* Portfolio cards: overlay hidden until hover */
+.pov{opacity:0 !important;transition:opacity .25s ease !important;
+     position:absolute;inset:0;
+     background:linear-gradient(to top,rgba(8,8,11,.88) 0%,transparent 52%)}
+.pc:hover .pov{opacity:1 !important}
+.pi{opacity:0 !important;transform:translateY(8px) !important;
+    transition:opacity .25s ease,transform .25s ease !important;
+    position:absolute;bottom:0;left:0;right:0;padding:18px}
+.pc:hover .pi{opacity:1 !important;transform:translateY(0) !important}
+
+
+/* ══ HERO VIDEO ══ */
+#hero-vid{
+  width:100% !important;display:block !important;
+  object-fit:cover !important;vertical-align:bottom !important;
+  /* Hardware acceleration */
+  transform:translateZ(0);-webkit-transform:translateZ(0);
+  will-change:auto
+}
+@media(max-width:768px){
+  #hero-vid{min-height:60vw;object-position:center}
+}
+@media(min-width:769px){
+  #hero-vid{max-height:100vh;min-height:480px}
+}
+
 </style>
 </head>
 <body>
@@ -391,6 +498,55 @@ nav{transform:translateZ(0)}
 </nav>
 
 <!-- HERO -->
+<!-- ═══ HEREX HERO VIDEO ═══ -->
+<section style="position:relative;width:100%;background:#08080B;overflow:hidden;padding:0;margin:0">
+  <div style="position:relative;width:100%;overflow:hidden">
+
+    <!-- Video: streaming directo desde Dropbox CDN -->
+    <video
+      id="hero-vid"
+      autoplay muted loop playsinline
+      preload="auto"
+      style="width:100%;display:block;object-fit:cover;
+             max-height:100vh;min-height:56vw;
+             vertical-align:bottom"
+    >
+      <source src="https://dl.dropboxusercontent.com/scl/fi/u66gbaemi5a19hgg9596j/HEREX-LANDING-PAGE.mov?rlkey=8nrkz6syul9asynbukopanwi6&st=1laa9hz1" type="video/mp4">
+      <source src="https://dl.dropboxusercontent.com/scl/fi/u66gbaemi5a19hgg9596j/HEREX-LANDING-PAGE.mov?rlkey=8nrkz6syul9asynbukopanwi6&st=1laa9hz1" type="video/quicktime">
+    </video>
+
+    <!-- Gradient: top dark so nav legible, bottom fade into page -->
+    <div style="position:absolute;inset:0;pointer-events:none;
+         background:linear-gradient(
+           to bottom,
+           rgba(8,8,11,.45) 0%,
+           rgba(8,8,11,.0) 35%,
+           rgba(8,8,11,.0) 65%,
+           rgba(8,8,11,.85) 100%
+         )"></div>
+
+    <!-- Title overlay -->
+    <div style="position:absolute;inset:0;display:flex;align-items:flex-end;
+         justify-content:center;padding:0 20px 48px;pointer-events:none">
+      <h2 style="
+        font-family:'Bebas Neue',cursive;
+        font-size:clamp(22px,4.2vw,64px);
+        font-weight:400;
+        line-height:1.1;
+        letter-spacing:0.06em;
+        color:#FFFFFF;
+        text-align:center;
+        margin:0;
+        text-shadow:0 2px 24px rgba(0,0,0,.7);
+        max-width:900px
+      ">
+        POST PRODUCCIÓN, EDICIÓN Y ESTRATEGIA<br>DE MARKETING PARA EMPRESAS.
+      </h2>
+    </div>
+
+  </div>
+</section>
+
 <section class="hero glow-amber bg-diag" id="inicio">
   <div class="wrap hg z1">
     <div>
@@ -496,46 +652,52 @@ nav{transform:translateZ(0)}
     <div class="plans">
       <div class="plan rv d1" tabindex="0" onclick="selectPlan(this,'Esencial')" id="p-esencial" data-tilt>
         <h3 class="pnm">ESENCIAL</h3>
-        <p class="pds">Para marcas que quieren contenido profesional sin complicaciones.</p>
-        <div><span class="ppr">$150</span><span class="pper"> USD/mes</span></div>
+        <p class="pds">Para marcas que inician su presencia digital con videos profesionales entregados mensualmente.</p>
+        <div><span class="ppr">$300</span><span class="pper"> USD/mes</span></div>
         <hr class="pdv">
         <ul class="feats">
-          <li><span class="ck">✓</span> 4 videos editados al mes</li>
-          <li><span class="ck">✓</span> Formato para todas las redes</li>
-          <li><span class="ck">✓</span> 2 revisiones por pieza</li>
-          <li><span class="ck">✓</span> Entrega en 72 horas</li>
-          <li><span class="ck">✓</span> Soporte por WhatsApp</li>
+          <li><span class="ck">✓</span> 4 videos editados y entregados al mes</li>
+          <li><span class="ck">✓</span> Exportación en formato para todas las redes</li>
+          <li><span class="ck">✓</span> 2 revisiones por video</li>
+          <li><span class="ck">✓</span> Entrega garantizada en 72 horas</li>
+          <li><span class="ck">✓</span> Soporte directo por WhatsApp</li>
+          <li><span class="ck">✓</span> Subtítulos profesionales incluidos</li>
         </ul>
         <button class="btn bo bfull" onclick="scrollToForm('Esencial')">Seleccionar Esencial</button>
       </div>
       <div class="plan pop rv d2" tabindex="0" onclick="selectPlan(this,'Crecimiento')" id="p-crecimiento" data-tilt>
         <span class="pbadge">Más popular</span>
         <h3 class="pnm">CRECIMIENTO</h3>
-        <p class="pds">Edición + estrategia + capacitación. La mejor relación valor-precio.</p>
-        <div><span class="ppr">$350</span><span class="pper"> USD/mes</span></div>
+        <p class="pds">Edición avanzada, estrategia y acompañamiento personalizado. Incluye llamada mensual con Ivan.</p>
+        <div><span class="ppr">$600</span><span class="pper"> USD/mes</span></div>
         <hr class="pdv">
         <ul class="feats">
-          <li><span class="ck">✓</span> Todo el plan Esencial</li>
-          <li><span class="ck">✓</span> 8 Reels/Shorts al mes</li>
-          <li><span class="ck">✓</span> 1 capacitación mensual (2h)</li>
-          <li><span class="ck">✓</span> Motion graphics básicos</li>
-          <li><span class="ck">✓</span> Templates personalizados</li>
-          <li><span class="ck">✓</span> Entrega en 48 horas</li>
+          <li><span class="ck">✓</span> Todo lo del plan Esencial</li>
+          <li><span class="ck">✓</span> 8 Reels/Shorts entregados al mes</li>
+          <li><span class="ck">✓</span> 1 sesión de capacitación mensual (2h)</li>
+          <li><span class="ck">✓</span> Motion graphics y animaciones básicas</li>
+          <li><span class="ck">✓</span> Templates de marca personalizados</li>
+          <li><span class="ck">✓</span> Entrega prioritaria en 48 horas</li>
+          <li><span class="ck">✓</span> Informe mensual de rendimiento de contenido</li>
+          <li><span class="ck">✓</span> 1 llamada estratégica mensual con Ivan (45 min)</li>
         </ul>
         <button class="btn bg bfull" onclick="scrollToForm('Crecimiento')">Seleccionar Crecimiento</button>
       </div>
       <div class="plan rv d3" tabindex="0" onclick="selectPlan(this,'Impacto')" id="p-impacto" data-tilt>
         <h3 class="pnm">IMPACTO</h3>
-        <p class="pds">Para marcas con visión de dominar sus canales digitales.</p>
-        <div><span class="ppr">$650</span><span class="pper"> USD/mes</span></div>
+        <p class="pds">Producción ilimitada, reuniones semanales y estrategia 360°. El plan para escalar sin límites.</p>
+        <div><span class="ppr">$1,000</span><span class="pper"> USD/mes</span></div>
         <hr class="pdv">
         <ul class="feats">
-          <li><span class="ck">✓</span> Todo el plan Crecimiento</li>
-          <li><span class="ck">✓</span> Capacitación semanal (1h)</li>
-          <li><span class="ck">✓</span> Estrategia de contenido mensual</li>
-          <li><span class="ck">✓</span> Motion graphics avanzados</li>
-          <li><span class="ck">✓</span> Revisiones ilimitadas</li>
-          <li><span class="ck">✓</span> Entrega prioritaria 24h</li>
+          <li><span class="ck">✓</span> Todo lo del plan Crecimiento</li>
+          <li><span class="ck">✓</span> Videos ilimitados entregados al mes</li>
+          <li><span class="ck">✓</span> Reuniones semanales agendadas con Ivan para revisar estrategia, contenido y resultados</li>
+          <li><span class="ck">✓</span> Estrategia de contenido 360° diseñada cada mes</li>
+          <li><span class="ck">✓</span> Motion graphics avanzados y animaciones custom</li>
+          <li><span class="ck">✓</span> Revisiones ilimitadas por pieza</li>
+          <li><span class="ck">✓</span> Entrega exprés en 24 horas</li>
+          <li><span class="ck">✓</span> Acceso directo a Ivan para consultas ilimitadas</li>
+          <li><span class="ck">✓</span> Dashboard mensual de métricas y crecimiento</li>
         </ul>
         <button class="btn bo bfull" onclick="scrollToForm('Impacto')">Seleccionar Impacto</button>
       </div>
@@ -548,7 +710,7 @@ nav{transform:translateZ(0)}
       <form id="checkout-form" onsubmit="handleSubmit(event)" novalidate>
         <div class="fgrid">
           <div class="field"><label for="fn">Nombre o empresa</label><input id="fn" name="name" type="text" placeholder="Tu nombre o marca" autocomplete="name"></div>
-          <div class="field"><label for="fpl">Plan</label><select id="fpl" name="plan" required><option value="">Selecciona</option><option value="Esencial">Esencial — $150/mes</option><option value="Crecimiento">Crecimiento — $350/mes</option><option value="Impacto">Impacto — $650/mes</option></select></div>
+          <div class="field"><label for="fpl">Plan</label><select id="fpl" name="plan" required><option value="">Selecciona</option><option value="Esencial">Esencial — $300/mes</option><option value="Crecimiento">Crecimiento — $600/mes</option><option value="Impacto">Impacto — $1,000/mes</option></select></div>
           <div class="field"><label for="fe">Email <span style="color:var(--gold)">*</span></label><input id="fe" name="email" type="email" placeholder="tu@correo.com" required autocomplete="email"></div>
           <div class="field"><label for="fw">WhatsApp <span style="color:var(--gray)">(opcional)</span></label><input id="fw" name="whatsapp" type="tel" placeholder="+57 300 000 0000" autocomplete="tel"></div>
           <div class="field full"><button type="submit" class="btn bg bfull" style="font-size:15px;padding:18px">💳 &nbsp;Proceder al pago →</button></div>
@@ -794,8 +956,31 @@ nav{transform:translateZ(0)}
 })();
 
 /* ── SCROLL REVEAL ── */
-const obs=new IntersectionObserver((entries)=>{requestAnimationFrame(()=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);}});});},{threshold:0.07,rootMargin:'0px 0px -20px 0px'});
+/* Reveal observer — works on both desktop and mobile */
+const obs=new IntersectionObserver((entries)=>{
+  requestAnimationFrame(()=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('on');
+        obs.unobserve(e.target);
+      }
+    });
+  });
+},{
+  threshold:0.05,
+  rootMargin:'0px 0px 0px 0px'  // no offset — fires as soon as element enters viewport
+});
 document.querySelectorAll('.rv,.fl,.fr,.r3,.su').forEach(el=>obs.observe(el));
+/* Also trigger elements already in viewport on page load */
+setTimeout(()=>{
+  document.querySelectorAll('.rv,.fl,.fr,.r3,.su').forEach(el=>{
+    const rect=el.getBoundingClientRect();
+    if(rect.top < window.innerHeight && rect.bottom > 0){
+      el.classList.add('on');
+      obs.unobserve(el);
+    }
+  });
+},100);
 
 /* ── COUNTER ── */
 const cobs = new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){
@@ -852,7 +1037,7 @@ function tFaq(el){
 function selectPlan(card,name){
   document.querySelectorAll('.plan').forEach(p=>p.classList.remove('active'));
   card.classList.add('active');
-  const prices={Esencial:'$150 USD',Crecimiento:'$350 USD',Impacto:'$650 USD'};
+  const prices={Esencial:'$300 USD',Crecimiento:'$600 USD',Impacto:'$1,000 USD'};
   document.getElementById('plan-label').textContent=name+' ('+prices[name]+')';
   const sel=document.getElementById('fpl');
   for(let i=0;i<sel.options.length;i++) if(sel.options[i].value===name){sel.selectedIndex=i;break;}
@@ -887,6 +1072,21 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click'
 
 /* ── DEFAULT PLAN ── */
 window.addEventListener('load',()=>{const c=document.getElementById('p-crecimiento');if(c)selectPlan(c,'Crecimiento');});
+
+/* ── Hero video: force play on iOS Safari ── */
+(function(){
+  var v=document.getElementById('hero-vid');
+  if(!v)return;
+  v.muted=true;
+  var p=v.play();
+  if(p!==undefined){
+    p.catch(function(){
+      // Autoplay blocked — try on first touch
+      document.addEventListener('touchstart',function(){v.play();},{once:true});
+    });
+  }
+})();
+
 </script>
 </body>
 </html>
