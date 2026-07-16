@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import styles from "./checkout.module.css";
 
@@ -21,25 +21,7 @@ interface PlanCheckout extends CheckoutBase {
   planId: "essential" | "growth" | "impact";
 }
 
-interface InstallmentItem {
-  number: number;
-  amount: number;
-  dueLabel: string;
-  status: "paid" | "due" | "upcoming";
-}
-
-export interface InstallmentCheckout extends CheckoutBase {
-  kind: "installment";
-  amount: number;
-  projectTotal: number;
-  installmentNumber: number;
-  installmentCount: number;
-  customerName: string;
-  projectReference: string;
-  installments: InstallmentItem[];
-}
-
-export type CheckoutConfiguration = OpenCheckout | PlanCheckout | InstallmentCheckout;
+export type CheckoutConfiguration = OpenCheckout | PlanCheckout;
 
 interface CheckoutExperienceProps {
   checkout: CheckoutConfiguration;
@@ -48,12 +30,10 @@ interface CheckoutExperienceProps {
 type CheckoutState = "idle" | "loading" | "ready";
 
 export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
-  const fixedAmount = checkout.kind === "open" ? null : checkout.amount;
+  const fixedAmount = checkout.kind === "plan" ? checkout.amount : null;
   const [amount, setAmount] = useState(fixedAmount ? String(fixedAmount) : "");
   const [email, setEmail] = useState("");
-  const [reference, setReference] = useState(
-    checkout.kind === "installment" ? checkout.projectReference : "",
-  );
+  const [reference, setReference] = useState("");
   const [error, setError] = useState("");
   const [checkoutState, setCheckoutState] = useState<CheckoutState>("idle");
 
@@ -169,7 +149,6 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
                 className={styles.input}
                 type="text"
                 value={reference}
-                disabled={checkout.kind === "installment"}
                 onChange={(event) => setReference(event.target.value)}
                 placeholder="Example: Website project, installment 2 of 4"
               />
@@ -205,6 +184,7 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
                 amount={numericAmount}
                 planId={checkout.kind === "plan" ? checkout.planId : null}
                 buyer={{ email: email.trim() }}
+                reference={reference.trim()}
                 onError={setError}
               />
               <p className={styles.paymentNote}>
@@ -220,51 +200,17 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
             <h2>{checkout.title}</h2>
             <p className={styles.summaryDescription}>{checkout.description}</p>
 
-            {checkout.kind === "installment" ? (
-              <>
-                <div className={styles.projectMeta}>
-                  <span>Project</span>
-                  <strong>{checkout.projectReference}</strong>
-                </div>
-                <div className={styles.progressHeader}>
-                  <span>Payment progress</span>
-                  <strong>{checkout.installmentNumber - 1} of {checkout.installmentCount} paid</strong>
-                </div>
-                <div className={styles.progressTrack} aria-hidden="true">
-                  <span style={{ width: `${((checkout.installmentNumber - 1) / checkout.installmentCount) * 100}%` }} />
-                </div>
-                <div className={styles.installments}>
-                  {checkout.installments.map((item) => (
-                    <div className={`${styles.installment} ${styles[item.status]}`} key={item.number}>
-                      <span className={styles.installmentMark} aria-hidden="true" />
-                      <div>
-                        <strong>Installment {item.number}</strong>
-                        <span>{item.dueLabel}</span>
-                      </div>
-                      <b>{formatMoney(item.amount, checkout.currency)}</b>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className={styles.summaryLine}>
-                <div>
-                  <span>Payment for</span>
-                  <strong>{checkout.kind === "plan" ? checkout.title : reference || "HEREX services"}</strong>
-                </div>
-                {checkout.kind === "plan" ? <Link href="/#precios">Change</Link> : null}
+            <div className={styles.summaryLine}>
+              <div>
+                <span>Payment for</span>
+                <strong>{checkout.kind === "plan" ? checkout.title : reference || "HEREX services"}</strong>
               </div>
-            )}
+              {checkout.kind === "plan" ? <Link href="/#precios">Change</Link> : null}
+            </div>
 
             <div className={styles.totalBlock}>
-              {checkout.kind === "installment" ? (
-                <div className={styles.totalContext}>
-                  <span>Project total</span>
-                  <strong>{formatMoney(checkout.projectTotal, checkout.currency)}</strong>
-                </div>
-              ) : null}
               <div className={styles.totalRow}>
-                <span>{checkout.kind === "installment" ? `Installment ${checkout.installmentNumber} due` : "Total due"}</span>
+                <span>Total due</span>
                 <strong>{formattedAmount}</strong>
               </div>
             </div>
@@ -302,18 +248,55 @@ function PayPalCheckout({
   amount,
   planId,
   buyer,
+  reference,
   onError,
 }: {
   amount: number;
   planId: PlanCheckout["planId"] | null;
   buyer: { email: string };
+  reference: string;
   onError(message: string): void;
 }) {
   const reactId = useId();
   const containerId = `paypal-buttons-${reactId.replace(/:/g, "")}`;
   const paymentToken = useRef("");
   const [status, setStatus] = useState("Loading secure payment options...");
+  const [mockMode, setMockMode] = useState(false);
+  const [mockProcessing, setMockProcessing] = useState(false);
   const buyerEmail = buyer.email;
+
+  const createOrder = useCallback(async (): Promise<PaymentOrderResponse> => {
+    const response = await fetch("/api/payments/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...(planId ? { planId } : { amount }),
+        buyer: { email: buyerEmail },
+        reference,
+      }),
+    });
+    const data = await response.json() as PaymentOrderResponse;
+    if (!response.ok || !data.orderId || !data.transactionId || !data.paymentToken) {
+      throw new Error(data.error || "The payment order could not be created.");
+    }
+    paymentToken.current = data.paymentToken;
+    return data;
+  }, [amount, buyerEmail, planId, reference]);
+
+  async function handleMockPayment() {
+    setMockProcessing(true);
+    setStatus("Completing mock payment...");
+    try {
+      const order = await createOrder();
+      if (!order.approvalUrl) throw new Error("The mock payment could not be opened.");
+      window.location.assign(order.approvalUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "The mock payment failed.";
+      setStatus(message);
+      onError(message);
+      setMockProcessing(false);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -323,8 +306,13 @@ function PayPalCheckout({
       try {
         const configResponse = await fetch("/api/payments/config", { cache: "no-store" });
         const config = await configResponse.json() as { provider?: string; clientId?: string; error?: string };
+        if (configResponse.ok && config.provider === "mock") {
+          setMockMode(true);
+          setStatus("");
+          return;
+        }
         if (!configResponse.ok || config.provider !== "paypal" || !config.clientId) {
-          throw new Error(config.error || "PayPal Sandbox is not available.");
+          throw new Error(config.error || "PayPal checkout is not available.");
         }
 
         await loadPayPalScript(config.clientId);
@@ -334,20 +322,7 @@ function PayPalCheckout({
         buttons = window.paypal.Buttons({
           style: { layout: "vertical", shape: "rect", label: "paypal", height: 48 },
           async createOrder() {
-            const response = await fetch("/api/payments/create-order", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...(planId ? { planId } : { amount }),
-                buyer: { email: buyerEmail },
-              }),
-            });
-            const data = await response.json() as { orderId?: string; transactionId?: string; paymentToken?: string; error?: string };
-            if (!response.ok || !data.orderId || !data.transactionId || !data.paymentToken) {
-              throw new Error(data.error || "The payment order could not be created.");
-            }
-            paymentToken.current = data.paymentToken;
-            return data.orderId;
+            return (await createOrder()).orderId;
           },
           async onApprove(data) {
             setStatus("Confirming payment with PayPal...");
@@ -366,7 +341,7 @@ function PayPalCheckout({
             window.location.assign("/payment/cancel");
           },
           onError(error) {
-            console.error("PayPal checkout failed", error);
+            console.error("PayPal checkout failed", { hasError: Boolean(error) });
             onError("PayPal could not complete the checkout. Please try again.");
             setStatus("Payment could not be completed.");
           },
@@ -384,9 +359,31 @@ function PayPalCheckout({
       active = false;
       buttons?.close();
     };
-  }, [amount, buyerEmail, containerId, onError, planId]);
+  }, [containerId, createOrder, onError]);
 
-  return <div className={styles.paypalArea}>{status ? <p role="status">{status}</p> : null}<div id={containerId} /></div>;
+  return (
+    <div className={styles.paypalArea}>
+      {status ? <p role="status">{status}</p> : null}
+      {mockMode ? (
+        <button
+          className={styles.mockPaymentButton}
+          type="button"
+          disabled={mockProcessing}
+          onClick={() => void handleMockPayment()}
+        >
+          {mockProcessing ? "Completing mock payment..." : "Complete mock payment"}
+        </button>
+      ) : <div id={containerId} />}
+    </div>
+  );
+}
+
+interface PaymentOrderResponse {
+  approvalUrl?: string | null;
+  error?: string;
+  orderId: string;
+  paymentToken: string;
+  transactionId: string;
 }
 
 let paypalScriptPromise: Promise<void> | null = null;

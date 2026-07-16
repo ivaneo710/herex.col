@@ -49,7 +49,10 @@ export class PayPalPaymentProvider implements PaymentProvider {
   private readonly baseUrl: string;
 
   constructor(env: NodeJS.ProcessEnv = process.env) {
-    this.environment = env.PAYPAL_ENV === "live" ? "live" : "sandbox";
+    if (env.PAYPAL_ENV !== "sandbox" && env.PAYPAL_ENV !== "live") {
+      throw new PaymentError("PAYPAL_ENV must be sandbox or live.", 503);
+    }
+    this.environment = env.PAYPAL_ENV;
     this.clientId = env.PAYPAL_CLIENT_ID;
     this.clientSecret = env.PAYPAL_CLIENT_SECRET;
     this.baseUrl =
@@ -61,6 +64,7 @@ export class PayPalPaymentProvider implements PaymentProvider {
   async createOrder({
     plan,
     buyer,
+    reference,
     appUrl,
     transactionId,
     paymentToken,
@@ -74,7 +78,9 @@ export class PayPalPaymentProvider implements PaymentProvider {
           {
             reference_id: plan.id,
             custom_id: transactionId,
-            description: `HEREX ${plan.name} one-time service payment`,
+            description: reference
+              ? `HEREX ${plan.name} - ${reference}`
+              : `HEREX ${plan.name} one-time service payment`,
             amount: {
               currency_code: plan.currency,
               value: plan.amount.toFixed(2),
@@ -192,6 +198,7 @@ export class PayPalPaymentProvider implements PaymentProvider {
       },
       body: "grant_type=client_credentials",
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
     const data = await safeJson<PayPalTokenResponse>(response);
 
@@ -213,6 +220,7 @@ export class PayPalPaymentProvider implements PaymentProvider {
         ...init.headers,
       },
       cache: "no-store",
+      signal: init.signal ?? AbortSignal.timeout(15_000),
     });
     const data = await safeJson<T>(response);
 
