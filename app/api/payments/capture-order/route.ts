@@ -1,59 +1,80 @@
 import { NextResponse } from "next/server";
 
 import { getPaymentProvider } from "@/lib/payments";
+import { verifyPaymentContext } from "@/lib/payments/context";
 import { paymentErrorResponse, readJsonObject } from "@/lib/payments/http";
-import { normalizePaymentStatus, publicTransaction } from "@/lib/payments/transactions";
+import { normalizePaymentStatus } from "@/lib/payments/transactions";
 import { PaymentError } from "@/lib/payments/types";
-import { transactionRepository } from "@/lib/transactions/repository";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
     const body = await readJsonObject(request);
-    const transactionId = textValue(body.transactionId);
     const orderId = textValue(body.orderId);
-    const transaction = transactionId
-      ? await transactionRepository.findByInternalId(transactionId)
-      : await transactionRepository.findByProviderOrderId(orderId);
-
-    if (!transaction) throw new PaymentError("Transaction not found.", 404);
-    if (orderId && transaction.providerOrderId !== orderId) {
-      throw new PaymentError("Order does not match the transaction.", 409);
-    }
-    if (transaction.paymentStatus === "completed" && transaction.providerCaptureId) {
-      return NextResponse.json({
-        transaction: publicTransaction(transaction),
-        idempotent: true,
-      });
-    }
+    if (!orderId) throw new PaymentError("Order ID is required.", 400);
+    const context = verifyPaymentContext(body.paymentToken);
 
     const provider = getPaymentProvider();
-    if (provider.name !== transaction.provider) {
-      throw new PaymentError("Configured provider does not match the transaction.", 409);
+    const current = await provider.getOrderStatus({ providerOrderId: orderId });
+    verifyOrder(current, context);
+
+    if (normalizePaymentStatus(current.status) === "completed") {
+      return NextResponse.json({ transaction: transactionResponse(context, provider.name, orderId, current.captureId, "completed"), idempotent: true });
     }
 
     const result = await provider.captureOrder({
-      providerOrderId: transaction.providerOrderId,
-      transactionId: transaction.internalTransactionId,
+      providerOrderId: orderId,
+      transactionId: context.transactionId,
     });
+    verifyOrder(result, context);
     const completed = result.status === "COMPLETED" && result.rawStatus === "COMPLETED";
-    const updated = await transactionRepository.update(transaction.internalTransactionId, {
-      providerCaptureId: result.captureId,
-      paymentStatus: completed ? "completed" : normalizePaymentStatus(result.rawStatus),
-    });
-    if (!updated) throw new PaymentError("Transaction update failed.", 500);
+    const paymentStatus = completed ? "completed" : normalizePaymentStatus(result.rawStatus);
 
     console.info("Payment capture checked", {
-      transactionId: updated.internalTransactionId,
-      provider: updated.provider,
-      status: updated.paymentStatus,
+      transactionId: context.transactionId,
+      provider: provider.name,
+      status: paymentStatus,
     });
 
-    return NextResponse.json({ transaction: publicTransaction(updated) });
+    return NextResponse.json({ transaction: transactionResponse(context, provider.name, orderId, result.captureId, paymentStatus) });
   } catch (error) {
     return paymentErrorResponse(error, "capture payment order");
   }
+}
+
+function verifyOrder(
+  order: { amount: number | null; currency: string | null; customId: string | null },
+  context: ReturnType<typeof verifyPaymentContext>,
+) {
+  if (order.amount !== context.amount || order.currency !== context.currency || order.customId !== context.transactionId) {
+    throw new PaymentError("PayPal order details do not match this payment.", 409);
+  }
+}
+
+function transactionResponse(
+  context: ReturnType<typeof verifyPaymentContext>,
+  provider: "mock" | "paypal",
+  orderId: string,
+  captureId: string | null,
+  paymentStatus: ReturnType<typeof normalizePaymentStatus>,
+) {
+  const now = new Date(context.issuedAt).toISOString();
+  return {
+    internalTransactionId: context.transactionId,
+    provider,
+    providerOrderId: orderId,
+    providerCaptureId: captureId,
+    planId: context.planId,
+    planName: context.planName,
+    amount: context.amount,
+    currency: context.currency,
+    buyerName: "",
+    buyerEmail: "",
+    paymentStatus,
+    createdAt: now,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 function textValue(value: unknown): string {

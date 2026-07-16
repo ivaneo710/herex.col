@@ -19,6 +19,7 @@ interface MockOrder {
   captureId: string | null;
   createdAt: string;
   updatedAt: string;
+  transactionId: string;
 }
 
 const globalStore = globalThis as typeof globalThis & {
@@ -35,9 +36,10 @@ export class MockPaymentProvider implements PaymentProvider {
     buyer,
     appUrl,
     transactionId,
+    paymentToken,
   }: CreateOrderInput): Promise<CreateOrderResult> {
     const orderId = createMockId("mock_order");
-    const approvalUrl = `${appUrl}/payment/success?mock=1&transactionId=${encodeURIComponent(transactionId)}&orderId=${encodeURIComponent(orderId)}`;
+    const approvalUrl = `${appUrl}/payment/success?mock=1&paymentToken=${encodeURIComponent(paymentToken)}&orderId=${encodeURIComponent(orderId)}`;
     const timestamp = new Date().toISOString();
 
     mockOrders.set(orderId, {
@@ -48,6 +50,7 @@ export class MockPaymentProvider implements PaymentProvider {
       captureId: null,
       createdAt: timestamp,
       updatedAt: timestamp,
+      transactionId,
     });
 
     return { provider: this.name, orderId, status: "CREATED", approvalUrl };
@@ -62,6 +65,9 @@ export class MockPaymentProvider implements PaymentProvider {
         status: "NOT_FOUND",
         captureId: null,
         rawStatus: "NOT_FOUND",
+        amount: null,
+        currency: null,
+        customId: null,
       };
     }
 
@@ -77,6 +83,9 @@ export class MockPaymentProvider implements PaymentProvider {
       status: "COMPLETED",
       captureId: order.captureId,
       rawStatus: "COMPLETED",
+      amount: order.plan.amount,
+      currency: order.plan.currency,
+      customId: order.transactionId,
     };
   }
 
@@ -87,6 +96,9 @@ export class MockPaymentProvider implements PaymentProvider {
       orderId: providerOrderId,
       status: order?.status ?? "NOT_FOUND",
       captureId: order?.captureId ?? null,
+      amount: order?.plan.amount ?? null,
+      currency: order?.plan.currency ?? null,
+      customId: order?.transactionId ?? null,
     };
   }
 }

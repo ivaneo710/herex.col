@@ -1,38 +1,45 @@
 import { NextResponse } from "next/server";
 
 import { getPaymentProvider } from "@/lib/payments";
+import { verifyPaymentContext } from "@/lib/payments/context";
 import { paymentErrorResponse } from "@/lib/payments/http";
-import { normalizePaymentStatus, publicTransaction } from "@/lib/payments/transactions";
+import { normalizePaymentStatus } from "@/lib/payments/transactions";
 import { PaymentError } from "@/lib/payments/types";
-import { transactionRepository } from "@/lib/transactions/repository";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
-    const transactionId = params.get("transactionId")?.slice(0, 200) || "";
     const orderId = params.get("orderId")?.slice(0, 200) || "";
-    const transaction = transactionId
-      ? await transactionRepository.findByInternalId(transactionId)
-      : await transactionRepository.findByProviderOrderId(orderId);
-
-    if (!transaction) throw new PaymentError("Transaction not found.", 404);
+    if (!orderId) throw new PaymentError("Order ID is required.", 400);
+    const context = verifyPaymentContext(params.get("paymentToken"));
 
     const provider = getPaymentProvider();
-    if (provider.name !== transaction.provider) {
-      throw new PaymentError("Configured provider does not match the transaction.", 409);
-    }
     const status = await provider.getOrderStatus({
-      providerOrderId: transaction.providerOrderId,
+      providerOrderId: orderId,
     });
-    const updated = await transactionRepository.update(transaction.internalTransactionId, {
-      paymentStatus: normalizePaymentStatus(status.status),
-      providerCaptureId: status.captureId || transaction.providerCaptureId,
-    });
-    if (!updated) throw new PaymentError("Transaction update failed.", 500);
+    if (status.amount !== context.amount || status.currency !== context.currency || status.customId !== context.transactionId) {
+      throw new PaymentError("PayPal order details do not match this payment.", 409);
+    }
 
-    return NextResponse.json({ transaction: publicTransaction(updated) });
+    return NextResponse.json({
+      transaction: {
+        internalTransactionId: context.transactionId,
+        provider: provider.name,
+        providerOrderId: orderId,
+        providerCaptureId: status.captureId,
+        planId: context.planId,
+        planName: context.planName,
+        amount: context.amount,
+        currency: context.currency,
+        buyerName: "",
+        buyerEmail: "",
+        paymentStatus: normalizePaymentStatus(status.status),
+        createdAt: new Date(context.issuedAt).toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    });
   } catch (error) {
     return paymentErrorResponse(error, "check payment status");
   }

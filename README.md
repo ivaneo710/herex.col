@@ -18,11 +18,11 @@ Open `http://localhost:3000`. Keep `PAYMENT_PROVIDER=mock` to exercise the check
 - `http://localhost:3000/checkout?plan=growth`: locked plan amount.
 - `http://localhost:3000/pay/demo-cuotas`: locked installment schedule preview available in mock development.
 
-The checkout button intentionally stops at a preview confirmation until the custom-payment records, durable storage, and final PayPal credentials are connected.
+The checkout uses an inline two-step flow: payment details followed by PayPal-hosted wallet and eligible card options.
 
 ## Payment providers
 
-The browser sends only a `planId` and buyer contact details. Names, amounts, and USD currency are resolved from the server-only allowlist in `lib/payments/plans.ts`.
+For fixed plans, the browser sends only a `planId`; names, amounts, and USD currency come from the server-only allowlist in `lib/payments/plans.ts`. Custom USD amounts are intentionally customer-entered and validated server-side between $1 and $10,000.
 
 ### Mock
 
@@ -43,11 +43,11 @@ PAYPAL_WEBHOOK_ID=
 APP_URL=http://localhost:3000
 ```
 
-Use the deployed preview URL for `APP_URL` when testing on Vercel. Never expose or commit the client secret.
+Use the deployed preview URL for `APP_URL` when testing on Vercel. Add the Sandbox webhook ID after creating a webhook for `/api/payments/webhook`. Never expose or commit the client secret.
 
 ### PayPal Live
 
-Switch `PAYPAL_ENV=live`, add the Live client ID and secret, and set `APP_URL` to the production domain. Do not enable Live payments until durable transaction storage and verified webhooks are implemented.
+Create a separate Live REST app and Live webhook. Set `PAYPAL_ENV=live`, add the Live client ID, secret, and webhook ID, and set `APP_URL` to the production domain. Sandbox and Live credentials are not interchangeable.
 
 ## Testing payment states
 
@@ -66,13 +66,14 @@ Switch `PAYPAL_ENV=live`, add the Live client ID and secret, and set `APP_URL` t
 - `lib/payments/types.ts`: provider, plan, order, and transaction contracts.
 - `lib/payments/plans.ts`: server-only plan allowlist.
 - `lib/payments/providers/*`: mock and PayPal REST implementations.
+- `lib/payments/context.ts`: signed, expiring payment context used to verify stateless Vercel requests.
 - `lib/payment-requests/preview.ts`: development-only installment preview data.
-- `lib/transactions/repository.ts`: repository contract with a development-only memory implementation.
 
 ## Required before production
 
-- Replace the memory transaction repository with durable storage. Memory state can disappear between Vercel function invocations and is not production-safe.
-- Implement PayPal webhook signature verification using `PAYPAL_WEBHOOK_ID`.
-- Process and reconcile approved/captured/refunded events idempotently.
-- Add database uniqueness constraints for internal transaction IDs, PayPal order IDs, and capture IDs.
-- Test PayPal Sandbox approval, cancellation, capture retries, duplicate callbacks, and network failures.
+- Add the correct Sandbox webhook ID to Preview and verify a simulated delivery.
+- Test PayPal Sandbox wallet, card, cancellation, capture retry, and duplicate callback behavior on Vercel Preview.
+- Create separate Live credentials and a Live webhook for the production domain.
+- Make and refund one small real payment after deployment.
+
+The first version uses PayPal as the transaction source of truth and does not maintain a HEREX payment database. Every capture/status request verifies the signed server context against PayPal's amount, currency, and internal order reference. Verified webhook events are logged but do not trigger separate fulfillment. Add durable storage later if HEREX needs an internal transaction dashboard, automated fulfillment, or reconciliation history outside PayPal.

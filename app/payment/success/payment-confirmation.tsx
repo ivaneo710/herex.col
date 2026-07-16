@@ -25,19 +25,19 @@ export function PaymentConfirmation() {
     if (attempted.current) return;
     attempted.current = true;
 
-    const transactionId = params.get("transactionId");
+    const paymentToken = params.get("paymentToken");
     const orderId = params.get("token") || params.get("orderId");
 
     async function confirmPayment() {
       try {
-        if (!transactionId && !orderId) {
+        if (!paymentToken || !orderId) {
           throw new Error("No order was found to confirm.");
         }
 
         const response = await fetch("/api/payments/capture-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transactionId, orderId }),
+          body: JSON.stringify({ paymentToken, orderId }),
         });
         const data = (await response.json().catch(() => ({}))) as CaptureResponse;
         if (!response.ok) throw new Error(data.error || "The payment could not be confirmed.");

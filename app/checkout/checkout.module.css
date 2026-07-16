@@ -79,7 +79,9 @@
 
 .breadcrumb,
 .intro,
-.form {
+.form,
+.stepper,
+.paymentStep {
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
@@ -133,6 +135,100 @@
   display: grid;
   gap: 22px;
   margin-top: 38px;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: auto minmax(32px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 34px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--quiet);
+}
+
+.step > span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.step > div {
+  display: grid;
+  gap: 2px;
+}
+
+.step strong {
+  color: inherit;
+  font-size: 12px;
+}
+
+.step small {
+  color: var(--quiet);
+  font-size: 10px;
+}
+
+.stepActive { color: var(--white); }
+
+.stepActive > span {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #0b0b0e;
+}
+
+.stepLine { height: 1px; background: var(--border); }
+.stepLineComplete { background: var(--gold); }
+
+.paymentStep { margin-top: 38px; }
+
+.paymentStepHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.paymentStepHeader h2 {
+  margin: 8px 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.paymentStepHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.paymentStepHeader button {
+  flex: 0 0 auto;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold-light);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .field > span {
@@ -326,6 +422,31 @@
   font-size: 11px;
   line-height: 1.6;
   text-align: center;
+}
+
+.paypalArea {
+  min-height: 54px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #f4f5f7;
+  color-scheme: light;
+}
+
+.paypalArea iframe {
+  color-scheme: light;
+}
+
+.paypalArea > p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 13px;
+  text-align: center;
+}
+
+.paymentStep > .paymentNote {
+  margin: 14px 0 0;
 }
 
 .summarySide {
@@ -662,6 +783,28 @@
   .lockedAmount {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .stepper {
+    grid-template-columns: auto minmax(20px, 1fr) auto;
+    gap: 9px;
+  }
+
+  .step {
+    gap: 7px;
+  }
+
+  .step small {
+    display: none;
+  }
+
+  .paymentStepHeader {
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .paymentStepHeader h2 {
+    font-size: 32px;
   }
 
   .totalRow strong {

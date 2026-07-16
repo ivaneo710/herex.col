@@ -1,5 +1,6 @@
 export type PaymentProviderName = "mock" | "paypal";
 export type PaymentCurrency = "USD";
+export type FixedPlanId = "essential" | "growth" | "impact";
 export type PaymentStatus =
   | "pending"
   | "created"
@@ -10,11 +11,13 @@ export type PaymentStatus =
   | "not_found";
 
 export interface PaymentPlan {
-  id: "essential" | "growth" | "impact";
+  id: FixedPlanId | "custom";
   name: string;
   amount: number;
   currency: PaymentCurrency;
 }
+
+export type FixedPaymentPlan = PaymentPlan & { id: FixedPlanId };
 
 export interface PaymentBuyer {
   name: string;
@@ -27,6 +30,7 @@ export interface CreateOrderInput {
   buyer: PaymentBuyer;
   appUrl: string;
   transactionId: string;
+  paymentToken: string;
 }
 
 export interface CreateOrderResult {
@@ -47,6 +51,9 @@ export interface CaptureOrderResult {
   status: string;
   captureId: string | null;
   rawStatus: string;
+  amount: number | null;
+  currency: PaymentCurrency | null;
+  customId: string | null;
 }
 
 export interface OrderStatusResult {
@@ -54,6 +61,19 @@ export interface OrderStatusResult {
   orderId: string;
   status: string;
   captureId: string | null;
+  amount: number | null;
+  currency: PaymentCurrency | null;
+  customId: string | null;
+}
+
+export interface WebhookVerificationInput {
+  authAlgo: string;
+  certUrl: string;
+  transmissionId: string;
+  transmissionSignature: string;
+  transmissionTime: string;
+  webhookId: string;
+  event: unknown;
 }
 
 export interface PaymentProvider {
@@ -61,6 +81,7 @@ export interface PaymentProvider {
   createOrder(input: CreateOrderInput): Promise<CreateOrderResult>;
   captureOrder(input: CaptureOrderInput): Promise<CaptureOrderResult>;
   getOrderStatus(input: { providerOrderId: string }): Promise<OrderStatusResult>;
+  verifyWebhookSignature?(input: WebhookVerificationInput): Promise<boolean>;
 }
 
 export interface Transaction {

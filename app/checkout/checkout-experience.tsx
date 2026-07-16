@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import styles from "./checkout.module.css";
 
@@ -45,20 +45,17 @@ interface CheckoutExperienceProps {
   checkout: CheckoutConfiguration;
 }
 
-type PreviewState = "idle" | "loading" | "ready";
+type CheckoutState = "idle" | "loading" | "ready";
 
 export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
   const fixedAmount = checkout.kind === "open" ? null : checkout.amount;
   const [amount, setAmount] = useState(fixedAmount ? String(fixedAmount) : "");
-  const [name, setName] = useState(
-    checkout.kind === "installment" ? checkout.customerName : "",
-  );
   const [email, setEmail] = useState("");
   const [reference, setReference] = useState(
     checkout.kind === "installment" ? checkout.projectReference : "",
   );
   const [error, setError] = useState("");
-  const [previewState, setPreviewState] = useState<PreviewState>("idle");
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>("idle");
 
   const numericAmount = useMemo(() => Number.parseFloat(amount) || 0, [amount]);
   const formattedAmount = formatMoney(numericAmount, checkout.currency);
@@ -78,17 +75,13 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
       setError("Enter an amount between $1 and $10,000 USD.");
       return;
     }
-    if (!name.trim()) {
-      setError("Enter the name of the person or business making the payment.");
-      return;
-    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError("Enter a valid email address for the receipt.");
+      setError("Enter a valid contact email for this payment.");
       return;
     }
 
-    setPreviewState("loading");
-    window.setTimeout(() => setPreviewState("ready"), 650);
+    setCheckoutState("loading");
+    window.setTimeout(() => setCheckoutState("ready"), 250);
   }
 
   return (
@@ -117,7 +110,19 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
             <p>Confirm the payment details. In the next step, you will continue securely with PayPal.</p>
           </div>
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.stepper} aria-label="Checkout progress">
+            <div className={`${styles.step} ${styles.stepActive}`}>
+              <span>1</span>
+              <div><strong>Payment details</strong><small>{checkoutState === "ready" ? "Completed" : "Amount and contact"}</small></div>
+            </div>
+            <span className={`${styles.stepLine} ${checkoutState === "ready" ? styles.stepLineComplete : ""}`} aria-hidden="true" />
+            <div className={`${styles.step} ${checkoutState === "ready" ? styles.stepActive : ""}`}>
+              <span>2</span>
+              <div><strong>Payment method</strong><small>Card or PayPal</small></div>
+            </div>
+          </div>
+
+          {checkoutState !== "ready" ? <form className={styles.form} onSubmit={handleSubmit} noValidate>
             {checkout.kind === "open" ? (
               <label className={styles.field}>
                 <span>Payment amount</span>
@@ -145,30 +150,18 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
               </div>
             )}
 
-            <div className={styles.fieldGrid}>
-              <label className={styles.field}>
-                <span>Full name or business name</span>
-                <input
-                  className={styles.input}
-                  type="text"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Name or business"
-                />
-              </label>
-              <label className={styles.field}>
-                <span>Receipt email</span>
-                <input
-                  className={styles.input}
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="you@example.com"
-                />
-              </label>
-            </div>
+            <label className={styles.field}>
+              <span>Contact email</span>
+              <input
+                className={styles.input}
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+              />
+              <small>Used by HEREX to match this payment to your project.</small>
+            </label>
 
             <label className={styles.field}>
               <span>Project or payment reference <em>Optional</em></span>
@@ -187,15 +180,38 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
             <button
               className={styles.payButton}
               type="submit"
-              disabled={previewState === "loading"}
+              disabled={checkoutState === "loading"}
             >
-              <span>{previewState === "loading" ? "Preparing payment..." : "Continue with PayPal"}</span>
+              <span>{checkoutState === "loading" ? "Preparing checkout..." : "Continue to checkout"}</span>
               <strong aria-hidden="true">PayPal</strong>
             </button>
             <p className={styles.paymentNote}>
               Pay with a card or PayPal balance. HEREX never stores card details.
             </p>
-          </form>
+          </form> : (
+            <section className={styles.paymentStep} aria-labelledby="payment-method-title">
+              <div className={styles.paymentStepHeader}>
+                <div>
+                  <span className={styles.eyebrow}>STEP 2 OF 2</span>
+                  <h2 id="payment-method-title">Choose a payment method</h2>
+                  <p>Complete your {formattedAmount} payment securely with PayPal.</p>
+                </div>
+                <button type="button" onClick={() => { setError(""); setCheckoutState("idle"); }}>
+                  Edit details
+                </button>
+              </div>
+              {error ? <div className={styles.error} role="alert">{error}</div> : null}
+              <PayPalCheckout
+                amount={numericAmount}
+                planId={checkout.kind === "plan" ? checkout.planId : null}
+                buyer={{ email: email.trim() }}
+                onError={setError}
+              />
+              <p className={styles.paymentNote}>
+                Payment details are securely handled by PayPal. HEREX never stores card details.
+              </p>
+            </section>
+          )}
         </section>
 
         <aside className={styles.summarySide}>
@@ -264,30 +280,130 @@ export function CheckoutExperience({ checkout }: CheckoutExperienceProps) {
         </aside>
       </div>
 
-      {previewState === "ready" ? (
-        <div className={styles.modalBackdrop} role="presentation">
-          <section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="preview-title">
-            <button
-              className={styles.modalClose}
-              type="button"
-              aria-label="Close"
-              onClick={() => setPreviewState("idle")}
-            >
-              ×
-            </button>
-            <span className={styles.modalKicker}>PREVIEW</span>
-            <h2 id="preview-title">The checkout is ready</h2>
-            <p>
-              In production, this step will create the order and open PayPal to complete the {formattedAmount} payment.
-            </p>
-            <button className={styles.modalAction} type="button" onClick={() => setPreviewState("idle")}>
-              Continue reviewing
-            </button>
-          </section>
-        </div>
-      ) : null}
     </main>
   );
+}
+
+interface PayPalNamespace {
+  Buttons(options: {
+    createOrder(): Promise<string>;
+    onApprove(data: { orderID: string }): Promise<void>;
+    onCancel(): void;
+    onError(error: unknown): void;
+    style: { layout: string; shape: string; label: string; height: number };
+  }): { render(selector: string): Promise<void>; close(): void };
+}
+
+declare global {
+  interface Window { paypal?: PayPalNamespace }
+}
+
+function PayPalCheckout({
+  amount,
+  planId,
+  buyer,
+  onError,
+}: {
+  amount: number;
+  planId: PlanCheckout["planId"] | null;
+  buyer: { email: string };
+  onError(message: string): void;
+}) {
+  const reactId = useId();
+  const containerId = `paypal-buttons-${reactId.replace(/:/g, "")}`;
+  const paymentToken = useRef("");
+  const [status, setStatus] = useState("Loading secure payment options...");
+  const buyerEmail = buyer.email;
+
+  useEffect(() => {
+    let active = true;
+    let buttons: ReturnType<PayPalNamespace["Buttons"]> | undefined;
+
+    async function initialize() {
+      try {
+        const configResponse = await fetch("/api/payments/config", { cache: "no-store" });
+        const config = await configResponse.json() as { provider?: string; clientId?: string; error?: string };
+        if (!configResponse.ok || config.provider !== "paypal" || !config.clientId) {
+          throw new Error(config.error || "PayPal Sandbox is not available.");
+        }
+
+        await loadPayPalScript(config.clientId);
+        if (!active || !window.paypal) return;
+
+        setStatus("");
+        buttons = window.paypal.Buttons({
+          style: { layout: "vertical", shape: "rect", label: "paypal", height: 48 },
+          async createOrder() {
+            const response = await fetch("/api/payments/create-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...(planId ? { planId } : { amount }),
+                buyer: { email: buyerEmail },
+              }),
+            });
+            const data = await response.json() as { orderId?: string; transactionId?: string; paymentToken?: string; error?: string };
+            if (!response.ok || !data.orderId || !data.transactionId || !data.paymentToken) {
+              throw new Error(data.error || "The payment order could not be created.");
+            }
+            paymentToken.current = data.paymentToken;
+            return data.orderId;
+          },
+          async onApprove(data) {
+            setStatus("Confirming payment with PayPal...");
+            const response = await fetch("/api/payments/capture-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId: data.orderID, paymentToken: paymentToken.current }),
+            });
+            const result = await response.json() as { transaction?: { paymentStatus?: string }; error?: string };
+            if (!response.ok || result.transaction?.paymentStatus !== "completed") {
+              throw new Error(result.error || "PayPal did not confirm the payment.");
+            }
+            window.location.assign(`/payment/success?paymentToken=${encodeURIComponent(paymentToken.current)}&orderId=${encodeURIComponent(data.orderID)}`);
+          },
+          onCancel() {
+            window.location.assign("/payment/cancel");
+          },
+          onError(error) {
+            console.error("PayPal checkout failed", error);
+            onError("PayPal could not complete the checkout. Please try again.");
+            setStatus("Payment could not be completed.");
+          },
+        });
+        await buttons.render(`#${containerId}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "PayPal could not be loaded.";
+        setStatus(message);
+        onError(message);
+      }
+    }
+
+    void initialize();
+    return () => {
+      active = false;
+      buttons?.close();
+    };
+  }, [amount, buyerEmail, containerId, onError, planId]);
+
+  return <div className={styles.paypalArea}>{status ? <p role="status">{status}</p> : null}<div id={containerId} /></div>;
+}
+
+let paypalScriptPromise: Promise<void> | null = null;
+
+function loadPayPalScript(clientId: string): Promise<void> {
+  if (window.paypal) return Promise.resolve();
+  if (paypalScriptPromise) return paypalScriptPromise;
+
+  paypalScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD&intent=capture&components=buttons`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("The secure PayPal checkout could not be loaded."));
+    document.head.appendChild(script);
+  });
+  return paypalScriptPromise;
 }
 
 function formatMoney(amount: number, currency: "USD"): string {

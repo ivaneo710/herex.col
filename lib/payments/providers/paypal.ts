@@ -8,6 +8,7 @@ import {
   type CreateOrderResult,
   type OrderStatusResult,
   type PaymentProvider,
+  type WebhookVerificationInput,
 } from "../types";
 
 interface PayPalLink {
@@ -18,6 +19,7 @@ interface PayPalLink {
 interface PayPalCapture {
   id?: string;
   status?: string;
+  amount?: { currency_code?: string; value?: string };
 }
 
 interface PayPalOrderResponse {
@@ -25,12 +27,18 @@ interface PayPalOrderResponse {
   status?: string;
   links?: PayPalLink[];
   purchase_units?: Array<{
+    custom_id?: string;
+    amount?: { currency_code?: string; value?: string };
     payments?: { captures?: PayPalCapture[] };
   }>;
 }
 
 interface PayPalTokenResponse {
   access_token?: string;
+}
+
+interface PayPalWebhookVerificationResponse {
+  verification_status?: string;
 }
 
 export class PayPalPaymentProvider implements PaymentProvider {
@@ -55,6 +63,7 @@ export class PayPalPaymentProvider implements PaymentProvider {
     buyer,
     appUrl,
     transactionId,
+    paymentToken,
   }: CreateOrderInput): Promise<CreateOrderResult> {
     const data = await this.request<PayPalOrderResponse>("/v2/checkout/orders", {
       method: "POST",
@@ -80,7 +89,7 @@ export class PayPalPaymentProvider implements PaymentProvider {
               locale: "en-US",
               landing_page: "LOGIN",
               user_action: "PAY_NOW",
-              return_url: `${appUrl}/payment/success?transactionId=${encodeURIComponent(transactionId)}`,
+              return_url: `${appUrl}/payment/success?paymentToken=${encodeURIComponent(paymentToken)}`,
               cancel_url: `${appUrl}/payment/cancel`,
               shipping_preference: "NO_SHIPPING",
             },
@@ -115,6 +124,8 @@ export class PayPalPaymentProvider implements PaymentProvider {
       },
     );
     const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
+    const purchaseUnit = data.purchase_units?.[0];
+    const amount = capture?.amount ?? purchaseUnit?.amount;
 
     return {
       provider: this.name,
@@ -122,6 +133,9 @@ export class PayPalPaymentProvider implements PaymentProvider {
       status: data.status ?? "UNKNOWN",
       captureId: capture?.id ?? null,
       rawStatus: capture?.status ?? data.status ?? "UNKNOWN",
+      amount: moneyValue(amount?.value),
+      currency: amount?.currency_code === "USD" ? "USD" : null,
+      customId: purchaseUnit?.custom_id ?? null,
     };
   }
 
@@ -131,13 +145,37 @@ export class PayPalPaymentProvider implements PaymentProvider {
       { method: "GET" },
     );
     const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
+    const purchaseUnit = data.purchase_units?.[0];
+    const amount = capture?.amount ?? purchaseUnit?.amount;
 
     return {
       provider: this.name,
       orderId: data.id ?? providerOrderId,
       status: capture?.status ?? data.status ?? "UNKNOWN",
       captureId: capture?.id ?? null,
+      amount: moneyValue(amount?.value),
+      currency: amount?.currency_code === "USD" ? "USD" : null,
+      customId: purchaseUnit?.custom_id ?? null,
     };
+  }
+
+  async verifyWebhookSignature(input: WebhookVerificationInput): Promise<boolean> {
+    const data = await this.request<PayPalWebhookVerificationResponse>(
+      "/v1/notifications/verify-webhook-signature",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          auth_algo: input.authAlgo,
+          cert_url: input.certUrl,
+          transmission_id: input.transmissionId,
+          transmission_sig: input.transmissionSignature,
+          transmission_time: input.transmissionTime,
+          webhook_id: input.webhookId,
+          webhook_event: input.event,
+        }),
+      },
+    );
+    return data.verification_status === "SUCCESS";
   }
 
   private async getAccessToken(): Promise<string> {
@@ -185,6 +223,12 @@ export class PayPalPaymentProvider implements PaymentProvider {
 
     return data;
   }
+}
+
+function moneyValue(value: string | undefined): number | null {
+  if (!value) return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : null;
 }
 
 function requestId(...parts: string[]): string {

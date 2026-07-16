@@ -1,53 +1,48 @@
 import { NextResponse } from "next/server";
 
 import { getPaymentProvider } from "@/lib/payments";
+import { signPaymentContext } from "@/lib/payments/context";
 import { paymentErrorResponse, readJsonObject } from "@/lib/payments/http";
-import { getPlan, publicPlan } from "@/lib/payments/plans";
+import { getCustomPayment, getPlan, publicPlan } from "@/lib/payments/plans";
 import { PaymentError, type PaymentBuyer } from "@/lib/payments/types";
-import { transactionRepository } from "@/lib/transactions/repository";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
     const body = await readJsonObject(request);
-    const plan = getPlan(body.planId);
-    if (!plan) throw new PaymentError("Invalid plan.", 400);
+    const plan = getPlan(body.planId) ?? getCustomPayment(body.amount);
+    if (!plan) throw new PaymentError("Select a valid plan or enter an amount between $1 and $10,000 USD.", 400);
 
     const buyer = validateBuyer(body.buyer);
     const provider = getPaymentProvider();
-    const transaction = await transactionRepository.create({
-      provider: provider.name,
-      providerOrderId: "",
-      providerCaptureId: null,
+    const transactionId = crypto.randomUUID();
+    const paymentToken = signPaymentContext({
+      transactionId,
       planId: plan.id,
       planName: plan.name,
       amount: plan.amount,
       currency: plan.currency,
-      buyerName: buyer.name,
-      buyerEmail: buyer.email,
-      paymentStatus: "pending",
+      issuedAt: Date.now(),
     });
     const result = await provider.createOrder({
       plan,
       buyer,
       appUrl: getAppUrl(request),
-      transactionId: transaction.internalTransactionId,
-    });
-    await transactionRepository.update(transaction.internalTransactionId, {
-      providerOrderId: result.orderId,
-      paymentStatus: result.status === "CREATED" ? "created" : "pending",
+      transactionId,
+      paymentToken,
     });
 
     console.info("Payment order created", {
-      transactionId: transaction.internalTransactionId,
+      transactionId,
       provider: provider.name,
       planId: plan.id,
     });
 
     return NextResponse.json(
       {
-        transactionId: transaction.internalTransactionId,
+        transactionId,
+        paymentToken,
         provider: provider.name,
         orderId: result.orderId,
         status: result.status,
