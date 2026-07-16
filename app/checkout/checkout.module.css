@@ -106,8 +106,7 @@
 }
 
 .eyebrow,
-.summaryEyebrow,
-.modalKicker {
+.summaryEyebrow {
   color: var(--gold);
   font-size: 11px;
   font-weight: 700;
@@ -254,12 +253,6 @@
   font-weight: 600;
 }
 
-.fieldGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
 .input,
 .control {
   width: 100%;
@@ -377,8 +370,7 @@
   font-size: 12px;
 }
 
-.payButton,
-.modalAction {
+.payButton {
   width: 100%;
   min-height: 58px;
   display: flex;
@@ -397,8 +389,7 @@
   transition: background 160ms ease, transform 160ms ease;
 }
 
-.payButton:hover,
-.modalAction:hover {
+.payButton:hover {
   background: var(--gold-light);
   transform: translateY(-1px);
 }
@@ -445,6 +436,24 @@
   text-align: center;
 }
 
+.mockPaymentButton {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 6px;
+  background: #1f2937;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mockPaymentButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .paymentStep > .paymentNote {
   margin: 14px 0 0;
 }
@@ -488,16 +497,12 @@
   padding: 0 0 28px;
 }
 
-.summaryLine > div,
-.projectMeta {
+.summaryLine > div {
   display: grid;
   gap: 6px;
 }
 
-.summaryLine span,
-.projectMeta span,
-.progressHeader span,
-.totalContext span {
+.summaryLine span {
   color: var(--quiet);
   font-size: 11px;
   font-weight: 700;
@@ -505,8 +510,7 @@
   text-transform: uppercase;
 }
 
-.summaryLine strong,
-.projectMeta strong {
+.summaryLine strong {
   color: var(--white);
   font-size: 14px;
 }
@@ -518,112 +522,17 @@
   text-decoration: none;
 }
 
-.projectMeta {
-  margin-bottom: 28px;
-}
-
-.progressHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-
-.progressHeader strong {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.progressTrack {
-  height: 4px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.progressTrack span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--gold);
-}
-
-.installments {
-  display: grid;
-  gap: 2px;
-  margin-top: 18px;
-}
-
-.installment {
-  min-height: 58px;
-  display: grid;
-  grid-template-columns: 10px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-}
-
-.installmentMark {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--quiet);
-}
-
-.installment > div {
-  display: grid;
-  gap: 2px;
-}
-
-.installment strong,
-.installment b {
-  font-size: 12px;
-}
-
-.installment span:not(.installmentMark) {
-  color: var(--quiet);
-  font-size: 10px;
-}
-
-.installment.paid {
-  opacity: 0.56;
-}
-
-.installment.paid .installmentMark {
-  background: #22c55e;
-}
-
-.installment.due {
-  background: rgba(200, 147, 58, 0.08);
-}
-
-.installment.due .installmentMark {
-  background: var(--gold);
-  box-shadow: 0 0 0 4px rgba(200, 147, 58, 0.12);
-}
-
 .totalBlock {
   margin-top: auto;
   padding-top: 26px;
   border-top: 1px solid var(--border);
 }
 
-.totalContext,
 .totalRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-}
-
-.totalContext {
-  margin-bottom: 16px;
-}
-
-.totalContext strong {
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .totalRow span {
@@ -665,58 +574,6 @@
   color: var(--quiet);
   font-size: 11px;
   line-height: 1.6;
-}
-
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.76);
-  backdrop-filter: blur(8px);
-}
-
-.modal {
-  position: relative;
-  width: min(100%, 460px);
-  padding: 34px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #15151b;
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
-}
-
-.modal h2 {
-  margin: 10px 0;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 38px;
-  font-weight: 400;
-}
-
-.modal p {
-  margin: 0 0 24px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.modalClose {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.modalAction {
-  justify-content: center;
 }
 
 @media (max-width: 920px) {
@@ -766,10 +623,6 @@
 
   .summaryInner h2 {
     font-size: 36px;
-  }
-
-  .fieldGrid {
-    grid-template-columns: 1fr;
   }
 
   .intro {

@@ -7,9 +7,13 @@ import { PaymentError, type PaymentProvider } from "./types";
 export function getPaymentProvider(
   env: NodeJS.ProcessEnv = process.env,
 ): PaymentProvider {
-  const provider = (env.PAYMENT_PROVIDER || "mock").toLowerCase();
+  const configured = env.PAYMENT_PROVIDER?.trim().toLowerCase();
+  const provider = configured || (env.NODE_ENV === "production" ? "" : "mock");
   if (provider === "paypal") return new PayPalPaymentProvider(env);
   if (provider === "mock") return new MockPaymentProvider();
 
-  throw new PaymentError(`Unsupported payment provider: ${provider}`);
+  throw new PaymentError(
+    provider ? `Unsupported payment provider: ${provider}` : "Payment provider is not configured.",
+    503,
+  );
 }

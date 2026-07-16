@@ -20,14 +20,13 @@ export interface PaymentPlan {
 export type FixedPaymentPlan = PaymentPlan & { id: FixedPlanId };
 
 export interface PaymentBuyer {
-  name: string;
   email: string;
-  whatsapp: string;
 }
 
 export interface CreateOrderInput {
   plan: PaymentPlan;
   buyer: PaymentBuyer;
+  reference: string;
   appUrl: string;
   transactionId: string;
   paymentToken: string;
@@ -98,18 +97,6 @@ export interface Transaction {
   paymentStatus: PaymentStatus;
   createdAt: string;
   updatedAt: string;
-}
-
-export type NewTransaction = Omit<
-  Transaction,
-  "internalTransactionId" | "createdAt" | "updatedAt"
->;
-
-export interface TransactionRepository {
-  create(input: NewTransaction): Promise<Transaction>;
-  findByInternalId(id: string): Promise<Transaction | null>;
-  findByProviderOrderId(orderId: string): Promise<Transaction | null>;
-  update(id: string, patch: Partial<NewTransaction>): Promise<Transaction | null>;
 }
 
 export class PaymentError extends Error {

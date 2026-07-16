@@ -35,7 +35,22 @@ export function verifyPaymentContext(token: unknown): PaymentContext {
 
   try {
     const context = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as PaymentContext;
-    if (!context.transactionId || !context.planId || !Number.isFinite(context.amount)) {
+    const validPlanId = ["essential", "growth", "impact", "custom"].includes(context.planId);
+    const validAmount = Number.isFinite(context.amount)
+      && context.amount >= 1
+      && context.amount <= 10_000
+      && context.amount === Math.round(context.amount * 100) / 100;
+    const validIssuedAt = Number.isFinite(context.issuedAt)
+      && context.issuedAt <= Date.now() + 60_000;
+    if (
+      !/^[0-9a-f-]{36}$/i.test(context.transactionId)
+      || !validPlanId
+      || !context.planName
+      || context.planName.length > 120
+      || context.currency !== "USD"
+      || !validAmount
+      || !validIssuedAt
+    ) {
       throw new Error("Incomplete context");
     }
     if (Date.now() - context.issuedAt > 24 * 60 * 60 * 1000) {
@@ -51,5 +66,8 @@ export function verifyPaymentContext(token: unknown): PaymentContext {
 function signature(payload: string): string {
   const secret = process.env.PAYPAL_CLIENT_SECRET;
   if (!secret) throw new PaymentError("Payment signing is not configured.", 503);
-  return createHmac("sha256", secret).update(payload).digest("base64url");
+  const signingKey = createHmac("sha256", secret)
+    .update("herex-payment-context:v1")
+    .digest();
+  return createHmac("sha256", signingKey).update(payload).digest("base64url");
 }

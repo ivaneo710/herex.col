@@ -16,7 +16,6 @@ Open `http://localhost:3000`. Keep `PAYMENT_PROVIDER=mock` to exercise the check
 
 - `http://localhost:3000/checkout`: customer-entered one-time amount.
 - `http://localhost:3000/checkout?plan=growth`: locked plan amount.
-- `http://localhost:3000/pay/demo-cuotas`: locked installment schedule preview available in mock development.
 
 The checkout uses an inline two-step flow: payment details followed by PayPal-hosted wallet and eligible card options.
 
@@ -60,14 +59,12 @@ Create a separate Live REST app and Live webhook. Set `PAYPAL_ENV=live`, add the
 - `app/page.tsx`: compatibility renderer for the unchanged landing page.
 - `index.html`: preserved landing-page markup, styles, and interactions.
 - `app/checkout/*`: responsive React checkout for open amounts and fixed plans.
-- `app/pay/[token]`: payment-request and installment checkout route.
 - `app/api/payments/*`: typed create, capture, status, and webhook routes.
 - `app/payment/*`: React payment result routes.
 - `lib/payments/types.ts`: provider, plan, order, and transaction contracts.
 - `lib/payments/plans.ts`: server-only plan allowlist.
 - `lib/payments/providers/*`: mock and PayPal REST implementations.
 - `lib/payments/context.ts`: signed, expiring payment context used to verify stateless Vercel requests.
-- `lib/payment-requests/preview.ts`: development-only installment preview data.
 
 ## Required before production
 

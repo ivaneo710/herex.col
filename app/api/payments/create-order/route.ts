@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     if (!plan) throw new PaymentError("Select a valid plan or enter an amount between $1 and $10,000 USD.", 400);
 
     const buyer = validateBuyer(body.buyer);
+    const reference = cleanReference(body.reference);
     const provider = getPaymentProvider();
     const transactionId = crypto.randomUUID();
     const paymentToken = signPaymentContext({
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
     const result = await provider.createOrder({
       plan,
       buyer,
+      reference,
       appUrl: getAppUrl(request),
       transactionId,
       paymentToken,
@@ -68,9 +70,7 @@ function validateBuyer(value: unknown): PaymentBuyer {
   }
 
   return {
-    name: cleanText(buyer.name, 120),
     email,
-    whatsapp: cleanText(buyer.whatsapp, 40),
   };
 }
 
@@ -78,7 +78,19 @@ function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
+function cleanReference(value: unknown): string {
+  return cleanText(value, 180)
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 90);
+}
+
 function getAppUrl(request: Request): string {
   const configured = process.env.APP_URL?.replace(/\/$/, "");
-  return configured || new URL(request.url).origin;
+  const appUrl = new URL(configured || new URL(request.url).origin);
+  const isLocal = appUrl.hostname === "localhost" || appUrl.hostname === "127.0.0.1";
+  if ((appUrl.protocol !== "https:" && !isLocal) || appUrl.username || appUrl.password) {
+    throw new PaymentError("APP_URL is invalid.", 503);
+  }
+  return appUrl.origin;
 }

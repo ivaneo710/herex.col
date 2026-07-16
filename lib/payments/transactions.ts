@@ -1,4 +1,4 @@
-import type { PaymentStatus, Transaction } from "./types";
+import type { PaymentStatus } from "./types";
 
 export function normalizePaymentStatus(status: string): PaymentStatus {
   switch (status.toUpperCase()) {
@@ -19,8 +19,4 @@ export function normalizePaymentStatus(status: string): PaymentStatus {
     default:
       return "pending";
   }
-}
-
-export function publicTransaction(transaction: Transaction): Transaction {
-  return { ...transaction };
 }

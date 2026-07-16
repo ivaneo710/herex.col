@@ -1,3 +1,6 @@
+import "server-only";
+
+import { Buffer } from "node:buffer";
 import { NextResponse } from "next/server";
 
 import { PaymentError } from "./types";
@@ -17,7 +20,13 @@ export async function readJsonObject(
   request: Request,
 ): Promise<Record<string, unknown>> {
   try {
-    const value: unknown = await request.json();
+    const declaredLength = Number(request.headers.get("content-length") || 0);
+    if (declaredLength > 256_000) throw new PaymentError("Request body is too large.", 413);
+    const raw = await request.text();
+    if (Buffer.byteLength(raw, "utf8") > 256_000) {
+      throw new PaymentError("Request body is too large.", 413);
+    }
+    const value: unknown = JSON.parse(raw);
     if (!value || typeof value !== "object" || Array.isArray(value)) {
       throw new PaymentError("Invalid JSON body.", 400);
     }
