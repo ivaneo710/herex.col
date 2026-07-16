@@ -159,6 +159,14 @@ input::placeholder{color:var(--gray)}
 select option{background:var(--bg4)}
 .fnote{font-size:12px;color:var(--gray);margin-top:12px;text-align:center;line-height:1.6}
 .sec-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--lgray);background:var(--bg4);border:1px solid var(--border2);border-radius:100px;padding:5px 12px;margin-bottom:14px}
+.pay-msg{margin-top:12px;font-size:13px;color:var(--lgray);text-align:center;min-height:20px}
+.pay-msg.error{color:#f87171}
+.pay-msg.success{color:#22c55e}
+.pay-summary{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:14px;margin:16px 0;text-align:left}
+.pay-summary-row{display:flex;justify-content:space-between;gap:16px;font-size:14px;margin:6px 0}
+.pay-summary-row span:first-child{color:var(--lgray)}
+.pay-modal-actions{display:flex;flex-direction:column;gap:10px}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none!important}
 
 /* ══ PORTFOLIO ══ */
 .port-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:36px;flex-wrap:wrap}
@@ -1139,7 +1147,7 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
     <h2 class="h2 rv d1" data-i18n-html="planes">ELIGE TU PLAN<br><span class="gold">Y CONTRATA HOY</span></h2>
     <p class="sub rv d2" style="margin-top:14px">Sin contratos a largo plazo. Sin letra pequeña. Empieza cuando quieras.</p>
     <div class="plans">
-      <div class="plan rv d1" tabindex="0" onclick="selectPlan(this,'Esencial')" id="p-esencial" data-tilt>
+      <div class="plan rv d1" id="p-esencial" data-tilt>
         <h3 class="pnm">ESENCIAL</h3>
         <p class="pds">Para marcas que quieren contenido profesional sin complicaciones.</p>
         <div><span class="ppr">$300</span><span class="pper"> USD/mes</span></div>
@@ -1151,9 +1159,9 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
           <li><span class="ck">✓</span> Entrega en 72 horas</li>
           <li><span class="ck">✓</span> Soporte por WhatsApp</li>
         </ul>
-        <button class="btn bo bfull" onclick="scrollToForm('Esencial')">Seleccionar Esencial</button>
+        <a class="btn bo bfull" href="/checkout?plan=essential">Seleccionar Esencial</a>
       </div>
-      <div class="plan pop rv d2" tabindex="0" onclick="selectPlan(this,'Crecimiento')" id="p-crecimiento" data-tilt>
+      <div class="plan pop rv d2" id="p-crecimiento" data-tilt>
         <span class="pbadge">Más popular</span>
         <h3 class="pnm">CRECIMIENTO</h3>
         <p class="pds">Edición + estrategia + capacitación. La mejor relación valor-precio.</p>
@@ -1166,9 +1174,9 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
           <li><span class="ck">✓</span> Motion graphics básicos</li>
           <li><span class="ck">✓</span> Entrega en 48 horas</li>
         </ul>
-        <button class="btn bg bfull" onclick="scrollToForm('Crecimiento')">Seleccionar Crecimiento</button>
+        <a class="btn bg bfull" href="/checkout?plan=growth">Seleccionar Crecimiento</a>
       </div>
-      <div class="plan rv d3" tabindex="0" onclick="selectPlan(this,'Impacto')" id="p-impacto" data-tilt>
+      <div class="plan rv d3" id="p-impacto" data-tilt>
         <h3 class="pnm">IMPACTO</h3>
         <p class="pds">Para marcas con visión de dominar sus canales digitales.</p>
         <div><span class="ppr">$1,000</span><span class="pper"> USD/mes</span></div>
@@ -1181,7 +1189,7 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
           <li><span class="ck">✓</span> Revisiones ilimitadas</li>
           <li><span class="ck">✓</span> <strong style="color:var(--gold)">Contenidos ILIMITADOS</strong> editados cada mes para tu empresa, marca o negocio</li>
         </ul>
-        <button class="btn bo bfull" onclick="scrollToForm('Impacto')">Seleccionar Impacto</button>
+        <a class="btn bo bfull" href="/checkout?plan=impact">Seleccionar Impacto</a>
       </div>
     </div>
     <div class="webplan rv" data-tilt>
@@ -1202,21 +1210,12 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
         <a href="https://wa.me/+573013839593?text=Hola%20Ivan%2C%20quiero%20cotizar%20un%20sitio%20web%20para%20mi%20marca%20o%20empresa." class="btn bg bfull" target="_blank" rel="noopener">COTIZAR POR WHATSAPP</a>
       </div>
     </div>
-    <!-- PAYMENT FORM -->
-    <div class="fbox rv d2" id="payment-form">
-      <span class="sec-badge">🔒 Pago seguro</span>
-      <h3 class="ftitle">Completa tu pedido</h3>
-      <p class="fsub">Plan elegido: <strong id="plan-label" style="color:var(--gold)">Crecimiento</strong> — Llena tus datos y procede al pago.</p>
-      <form id="checkout-form" onsubmit="handleSubmit(event)" novalidate>
-        <div class="fgrid">
-          <div class="field"><label for="fn">Nombre o empresa</label><input id="fn" name="name" type="text" placeholder="Tu nombre o marca" autocomplete="name"></div>
-          <div class="field"><label for="fpl">Plan</label><select id="fpl" name="plan" required><option value="">Selecciona</option><option value="Esencial">Esencial — $300/mes</option><option value="Crecimiento">Crecimiento — $600/mes</option><option value="Impacto">Impacto — $1,000/mes</option></select></div>
-          <div class="field"><label for="fe">Email <span style="color:var(--gold)">*</span></label><input id="fe" name="email" type="email" placeholder="tu@correo.com" required autocomplete="email"></div>
-          <div class="field"><label for="fw">WhatsApp <span style="color:var(--gray)">(opcional)</span></label><input id="fw" name="whatsapp" type="tel" placeholder="+57 300 000 0000" autocomplete="tel"></div>
-          <div class="field full"><button type="submit" class="btn bg bfull" style="font-size:15px;padding:18px">💳 &nbsp;Proceder al pago →</button></div>
-        </div>
-        <p class="fnote">Al continuar confirmas nuestras condiciones. Recibirás email de bienvenida y mensaje de WhatsApp de Ivan en menos de 2 horas.</p>
-      </form>
+    <div class="webcta rv d2" style="margin-top:28px">
+      <div>
+        <div class="webcta-t">Already have an agreed amount?</div>
+        <div class="webcta-d">Make a secure custom payment in USD.</div>
+      </div>
+      <a href="/checkout" class="btn bg">GO TO CHECKOUT</a>
     </div>
     <div style="margin-top:20px;text-align:center;font-size:14px;color:var(--gray)">¿Tienes dudas? <a href="https://wa.me/+573013839593?text=Quiero%20asesor%C3%ADa%20gratuita%20de%20HEREX" style="color:var(--gold);font-weight:600;text-decoration:none" target="_blank">Agenda 15 min gratis →</a></div>
   </div>
@@ -1229,7 +1228,7 @@ nav .logo,nav .nls,nav .nls>*{flex-shrink:0}
     <h2 class="h2 rv d1" data-i18n-html="pasos">3 PASOS<br><span class="gold">PARA EMPEZAR</span></h2>
     <div class="proc-g">
       <div class="proc-c r3 d1" data-tilt><span class="proc-n">01</span><span class="proc-icon">📋</span><div class="proc-t">Elige tu plan</div><p class="proc-d">Selecciona el plan, llena el formulario con tu email. Solo tarda 2 minutos.</p></div>
-      <div class="proc-c r3 d2" data-tilt><span class="proc-n">02</span><span class="proc-icon">💳</span><div class="proc-t">Realiza el pago</div><p class="proc-d">Confirma tu plan y paga de forma segura vía WhatsApp, Stripe o transferencia.</p></div>
+      <div class="proc-c r3 d2" data-tilt><span class="proc-n">02</span><span class="proc-icon">💳</span><div class="proc-t">Realiza el pago</div><p class="proc-d">Confirm the amount and pay securely with card or PayPal.</p></div>
       <div class="proc-c r3 d3" data-tilt><span class="proc-n">03</span><span class="proc-icon">🚀</span><div class="proc-t">Bienvenido a HEREX</div><p class="proc-d">Email de bienvenida + mensaje de Ivan por WhatsApp. Comenzamos en 24h.</p></div>
     </div>
   </div>
@@ -1623,33 +1622,6 @@ function tFaq(el){
   if(!open){a.classList.add('open');ic.classList.add('open');}
 }
 
-/* ── PLAN SELECTION ── */
-function selectPlan(card,name){
-  document.querySelectorAll('.plan').forEach(p=>p.classList.remove('active'));
-  card.classList.add('active');
-  const prices={Esencial:'$300 USD',Crecimiento:'$600 USD',Impacto:'$1,000 USD'};
-  document.getElementById('plan-label').textContent=name+' ('+prices[name]+')';
-  const sel=document.getElementById('fpl');
-  for(let i=0;i<sel.options.length;i++) if(sel.options[i].value===name){sel.selectedIndex=i;break;}
-}
-function scrollToForm(name){
-  const c=document.getElementById('p-'+name.toLowerCase());
-  if(c)selectPlan(c,name);
-  var __pf=document.getElementById('payment-form');if(window.__smoothTo){window.__smoothTo(__pf,-6);}else{__pf.scrollIntoView({behavior:'smooth',block:'start'});}
-}
-
-/* ── FORM ── */
-function handleSubmit(e){
-  e.preventDefault();
-  const em=document.getElementById('fe').value.trim(),wa=document.getElementById('fw').value.trim(),pl=document.getElementById('fpl').value;
-  if(!em||!em.includes('@')){document.getElementById('fe').focus();document.getElementById('fe').style.borderColor='#ef4444';return;}
-  if(!pl){document.getElementById('fpl').focus();return;}
-  document.getElementById('fe').style.borderColor='';
-  const msg=encodeURIComponent('Hola Ivan, me registré en HEREX. Plan: '+pl+' | Email: '+em+(wa?' | WhatsApp: '+wa:'')+' | Quiero proceder con el pago.');
-  document.getElementById('ov-email').textContent=em;
-  document.getElementById('ov-wa').href='https://wa.me/+573013839593?text='+msg;
-  document.getElementById('pay-overlay').classList.add('show');
-}
 function closeOv(){document.getElementById('pay-overlay').classList.remove('show');}
 document.getElementById('pay-overlay').addEventListener('click',function(e){if(e.target===this)closeOv();});
 
@@ -1659,9 +1631,6 @@ window.addEventListener('scroll',()=>{let cur='';secs.forEach(s=>{if(window.scro
 
 /* ── SMOOTH SCROLL ── */
 document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{const href=a.getAttribute('href');if(!href||href.length<2)return;const t=document.querySelector(href);if(t){e.preventDefault();if(window.__smoothTo){window.__smoothTo(t,-6);}else{t.scrollIntoView({behavior:'smooth',block:'start'});}}});});
-
-/* ── DEFAULT PLAN ── */
-window.addEventListener('load',()=>{const c=document.getElementById('p-crecimiento');if(c)selectPlan(c,'Crecimiento');});
 
 (function(){
   var v=document.getElementById('hero-vid');
