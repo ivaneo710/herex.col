@@ -27,9 +27,11 @@ export async function POST(request: Request) {
       providerOrderId: orderId,
       transactionId: context.transactionId,
     });
-    verifyOrder(result, context);
-    const completed = result.status === "COMPLETED" && result.rawStatus === "COMPLETED";
-    const paymentStatus = completed ? "completed" : normalizePaymentStatus(result.rawStatus);
+    const confirmed = await provider.getOrderStatus({ providerOrderId: orderId });
+    verifyOrder(confirmed, context);
+    const completed = result.status === "COMPLETED" && confirmed.status === "COMPLETED";
+    const paymentStatus = completed ? "completed" : normalizePaymentStatus(confirmed.status);
+    const captureId = confirmed.captureId ?? result.captureId;
 
     console.info("Payment capture checked", {
       transactionId: context.transactionId,
@@ -37,7 +39,7 @@ export async function POST(request: Request) {
       status: paymentStatus,
     });
 
-    return NextResponse.json({ transaction: transactionResponse(context, provider.name, orderId, result.captureId, paymentStatus) });
+    return NextResponse.json({ transaction: transactionResponse(context, provider.name, orderId, captureId, paymentStatus) });
   } catch (error) {
     return paymentErrorResponse(error, "capture payment order");
   }
@@ -48,6 +50,14 @@ function verifyOrder(
   context: ReturnType<typeof verifyPaymentContext>,
 ) {
   if (order.amount !== context.amount || order.currency !== context.currency || order.customId !== context.transactionId) {
+    console.warn("PayPal order verification mismatch", {
+      amountMatches: order.amount === context.amount,
+      currencyMatches: order.currency === context.currency,
+      transactionMatches: order.customId === context.transactionId,
+      providerAmount: order.amount,
+      expectedAmount: context.amount,
+      providerCurrency: order.currency,
+    });
     throw new PaymentError("PayPal order details do not match this payment.", 409);
   }
 }
