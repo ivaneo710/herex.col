@@ -2084,7 +2084,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
   function buildMarquee(){
     var track=document.querySelector('.mq-track'); if(!track) return;
     if(!track.getAttribute('data-base')){
-      var first=Array.prototype.slice.call(track.children,0,4);
+      var first=Array.prototype.slice.call(track.children);
       if(!first.length) return;
       track.setAttribute('data-base', first.map(function(n){return n.outerHTML;}).join(''));
     }
