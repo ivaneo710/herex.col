@@ -1,4 +1,5 @@
 import "server-only";
+// rebuild landing from current index.html (cache-bust 2026-10-18)
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
