@@ -18,7 +18,7 @@ interface OpenCheckout extends CheckoutBase {
 interface PlanCheckout extends CheckoutBase {
   kind: "plan";
   amount: number;
-  planId: "essential" | "growth" | "impact";
+  planId: "essential" | "growth" | "impact" | "web_pro" | "web_advanced";
 }
 
 export type CheckoutConfiguration = OpenCheckout | PlanCheckout;
