@@ -2,7 +2,7 @@ import Script from "next/script";
 
 import { readLegacyLanding } from "@/lib/landing/read-legacy-landing";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default function LandingPage() {
   const landing = readLegacyLanding();
