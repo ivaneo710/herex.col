@@ -1,6 +1,6 @@
 export type PaymentProviderName = "mock" | "paypal";
 export type PaymentCurrency = "USD";
-export type FixedPlanId = "essential" | "growth" | "impact";
+export type FixedPlanId = "essential" | "growth" | "impact" | "web_pro" | "web_advanced";
 export type PaymentStatus =
   | "pending"
   | "created"

@@ -3,9 +3,11 @@ import "server-only";
 import type { FixedPaymentPlan, FixedPlanId, PaymentPlan } from "./types";
 
 export const plans = {
-  essential: { id: "essential", name: "Essential", amount: 300, currency: "USD" },
-  growth: { id: "growth", name: "Growth", amount: 600, currency: "USD" },
-  impact: { id: "impact", name: "Impact", amount: 1000, currency: "USD" },
+  essential: { id: "essential", name: "Essential", amount: 600, currency: "USD" },
+  growth: { id: "growth", name: "Growth", amount: 1200, currency: "USD" },
+  impact: { id: "impact", name: "Impact", amount: 2500, currency: "USD" },
+  web_pro: { id: "web_pro", name: "Professional Website", amount: 1500, currency: "USD" },
+  web_advanced: { id: "web_advanced", name: "Advanced Website", amount: 3000, currency: "USD" },
 } as const satisfies Record<FixedPlanId, FixedPaymentPlan>;
 
 export function getPlan(planId: unknown): FixedPaymentPlan | null {
