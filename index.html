@@ -1217,6 +1217,9 @@ body.pf-locked main,body.pf-locked>section,body.pf-locked>nav{filter:blur(1px) s
 .bc-meta i{color:var(--gold);font-size:10.5px;font-style:normal;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
 /* R31 show real screenshots (override earlier display:none) */
 .sitethumb .st-shot,.sitethumb .site-fav{display:block!important}
+/* R32 website previews: show full homepage thumbnail (contain) */
+.sitethumb .st-shot{object-fit:contain!important;object-position:center!important;transform:none!important;background:#0A0A0E!important}
+.sitethumb:hover .st-shot{transform:none!important}
 .bcard .bshot{display:block!important}
 </style>
 </head>
