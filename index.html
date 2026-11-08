@@ -1412,13 +1412,13 @@ nav.rx-nav-solid .btn.bg{background:var(--rx-ink)!important;color:#fff!important
 #payment-form .btn,#payment-form button[type="submit"]{background:#0c0c0d!important;color:#fff!important;border:none!important}
 #payment-form .btn::before{display:none!important}
 /* ===== A4 portfolio sub-page — smooth fluid open/close (no clip/3D jank) ===== */
-.pf-view{display:flex!important;transform:translateY(100%);pointer-events:none;transition:transform .6s var(--rx-ease);will-change:transform}
+.pf-view{display:flex!important;transform:translateY(100%);pointer-events:none;transition:transform .6s var(--rx-ease)}
 .pf-view.open{transform:translateY(0)!important;pointer-events:auto!important}
 .pf-view.animating{transform:translateY(0)!important}
 
 /* ===== B pricing sub-page (full-screen sheet, smooth) ===== */
-.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;transform:translateY(100%);pointer-events:none;transition:transform .55s var(--rx-ease);will-change:transform}
-.rx-sheet.open{transform:translateY(0);pointer-events:auto}
+.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;transform:translateY(100%);pointer-events:none;transition:transform .55s var(--rx-ease)}
+.rx-sheet.open{transform:translateY(0)!important;pointer-events:auto!important}
 @keyframes rxSheetIn{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:none}}
 @keyframes rxSheetOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(26px)}}
 .rx-sheet-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
