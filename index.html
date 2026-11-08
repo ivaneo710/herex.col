@@ -1412,14 +1412,13 @@ nav.rx-nav-solid .btn.bg{background:var(--rx-ink)!important;color:#fff!important
 #payment-form .btn,#payment-form button[type="submit"]{background:#0c0c0d!important;color:#fff!important;border:none!important}
 #payment-form .btn::before{display:none!important}
 /* ===== A4 portfolio sub-page — smooth fluid open/close (no clip/3D jank) ===== */
-.pf-view{display:none!important}
-.pf-view.open{display:flex!important;animation:rxSheetIn .55s var(--rx-ease) both!important}
-.pf-view.animating{animation:rxSheetIn .55s var(--rx-ease) both!important}
+.pf-view{display:flex!important;transform:translateY(100%);pointer-events:none;transition:transform .6s var(--rx-ease);will-change:transform}
+.pf-view.open{transform:translateY(0)!important;pointer-events:auto!important}
+.pf-view.animating{transform:translateY(0)!important}
 
 /* ===== B pricing sub-page (full-screen sheet, smooth) ===== */
-.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;display:none}
-.rx-sheet.open{display:block;animation:rxSheetIn .55s var(--rx-ease) both}
-.rx-sheet.rx-closing{display:block;animation:rxSheetOut .42s var(--rx-ease) both}
+.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;transform:translateY(100%);pointer-events:none;transition:transform .55s var(--rx-ease);will-change:transform}
+.rx-sheet.open{transform:translateY(0);pointer-events:auto}
 @keyframes rxSheetIn{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:none}}
 @keyframes rxSheetOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(26px)}}
 .rx-sheet-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -2642,7 +2641,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
 /* RX: pricing sub-page open/close (smooth, no scroll on hero) */
 (function(){
   function open(id){var el=document.getElementById(id);if(!el)return;el.classList.add('open');el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
-  function close(id){var el=document.getElementById(id);if(!el)return;el.classList.add('rx-closing');document.body.classList.remove('rx-sheet-open');setTimeout(function(){el.classList.remove('open','rx-closing');el.setAttribute('aria-hidden','true');},430);}
+  function close(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');el.setAttribute('aria-hidden','true');document.body.classList.remove('rx-sheet-open');}
   window.rxOpenSheet=open;window.rxCloseSheet=close;
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close('rx-pricing');});
 })();
