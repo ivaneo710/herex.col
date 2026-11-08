@@ -1339,6 +1339,50 @@ nav .nl.nl-show::after{display:none!important}
   .rx-trust-label{padding:38px 0 20px}
 }
 
+
+/* ============ RX HERO v2 — full-bleed cinematic video background (japyluts-style) ============ */
+#inicio.rx-hero--video{min-height:100vh;min-height:100svh;padding:0!important;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;background:#0a0a0c!important}
+#inicio.rx-hero--video::before,#inicio.rx-hero--video::after{content:none!important;display:none!important}
+.rx-hero--video .rx-hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.rx-hero--video .rx-hero-bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.97) contrast(1.03)}
+.rx-hero--video .rx-hero-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,8,11,.58) 0%,rgba(8,8,11,.42) 40%,rgba(8,8,11,.56) 72%,rgba(8,8,11,.92) 100%)}
+.rx-hero--video .rx-hero-inner{position:relative;z-index:2;width:100%;max-width:1000px;margin:0 auto;padding:118px 24px 96px;display:flex;flex-direction:column;align-items:center}
+.rx-hero--video .rx-eyebrow{color:rgba(255,255,255,.74)}
+.rx-hero--video .rx-eyebrow::before{background:rgba(255,255,255,.6);opacity:1}
+.rx-hero--video .rx-h1{color:#fff!important;text-align:center;font-size:clamp(46px,7.4vw,98px)!important;margin:22px 0 0!important;text-shadow:0 2px 40px rgba(0,0,0,.4)}
+.rx-hero--video .rx-h1 .gold{color:#fff!important;font-style:italic!important}
+.rx-hero--video .rx-lead{color:rgba(255,255,255,.82);text-align:center;margin:28px auto 0;max-width:600px}
+.rx-hero--video .rx-hero-actions{justify-content:center;margin-top:38px}
+.rx-btn--light{background:#fff;color:#0c0c0d}
+.rx-btn--light:hover{background:#fff;transform:translateY(-2px);box-shadow:0 14px 34px -14px rgba(0,0,0,.6)}
+.rx-btn--ghost-light{background:transparent;color:#fff;border-color:rgba(255,255,255,.42)}
+.rx-btn--ghost-light:hover{background:#fff;color:#0c0c0d;border-color:#fff}
+.rx-hero-credit{margin-top:30px;color:rgba(255,255,255,.62);font-family:var(--rx-fs);font-size:13px;letter-spacing:.02em}
+.rx-hero-credit strong{color:#fff;font-weight:600}
+.rx-scroll-ind{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:2;color:rgba(255,255,255,.6);font-family:var(--rx-fs);font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:9px}
+.rx-scroll-ind::after{content:"";width:1px;height:36px;background:linear-gradient(rgba(255,255,255,.65),transparent);animation:rxScroll 2.1s ease-in-out infinite}
+@keyframes rxScroll{0%{transform:scaleY(.1);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(.1);transform-origin:bottom}}
+@media(prefers-reduced-motion:reduce){.rx-scroll-ind::after{animation:none}}
+@media(max-width:560px){
+  .rx-hero--video .rx-hero-inner{padding:104px 20px 84px}
+  .rx-hero--video .rx-h1{font-size:clamp(38px,12.2vw,60px)!important}
+  .rx-hero--video .rx-hero-actions{flex-direction:column;align-items:stretch;width:100%;max-width:340px;gap:11px}
+  .rx-hero--video .rx-hero-actions .rx-btn{width:100%;justify-content:center}
+  .rx-hero-credit{font-size:12px}
+}
+/* transparent nav over the video hero, turns solid on scroll */
+nav{background:transparent!important;border-bottom-color:transparent!important;transition:background .45s var(--rx-ease),border-color .45s var(--rx-ease)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+nav .logo{color:#fff!important}
+nav .nl{color:rgba(255,255,255,.80)!important}
+nav .nl:hover{color:#fff!important}
+nav .nl::after{background:#fff!important}
+nav .btn.bg{background:#fff!important;color:#0c0c0d!important}
+nav .btn.bg:hover{background:#fff!important;opacity:.88;transform:translateY(-1px)}
+nav.rx-nav-solid{background:rgba(255,255,255,.86)!important;border-bottom-color:var(--rx-line)!important;-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
+nav.rx-nav-solid .logo{color:var(--rx-ink)!important}
+nav.rx-nav-solid .nl{color:var(--rx-gray)!important}
+nav.rx-nav-solid .nl:hover{color:var(--rx-ink)!important}
+nav.rx-nav-solid .btn.bg{background:var(--rx-ink)!important;color:#fff!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&display=swap" rel="stylesheet">
 
@@ -1364,28 +1408,25 @@ nav .nl.nl-show::after{display:none!important}
 
 <!-- HERO -->
 <!-- VIDEO HERO -->
-<!-- ===== RX HERO (editorial, monochrome) ===== -->
-<section id="inicio" class="rx-hero">
-  <div class="rx-container rx-hero-grid">
-    <div class="rx-hero-copy">
-      <span class="rx-eyebrow rx-reveal rx-d1">Post-production · Marketing · Consulting</span>
-      <h1 class="rx-h1"><span class="rx-tl"><span class="rx-tli">YOUR BRAND</span></span><span class="rx-tl"><span class="rx-tli">DESERVES</span></span><span class="rx-tl"><span class="rx-tli">PRESENCE</span></span><span class="rx-tl"><span class="rx-tli"><span class="gold">THAT IMPACTS</span></span></span></h1>
-      <p class="rx-lead rx-reveal rx-d3">Websites, payment gateways, post-production, video editing and marketing. We help brands, companies and organizations build an online presence and sell more.</p>
-      <div class="rx-hero-actions rx-reveal rx-d4">
-        <a href="#precios" class="rx-btn rx-btn--solid">View plans &amp; get started <span class="rx-arw">→</span></a>
-        <a href="#" class="rx-btn rx-btn--ghost pf-open">View portfolio</a>
-      </div>
-      <div class="rx-hero-meta rx-reveal rx-d5">Directed by <strong>Ivan Orozco</strong> · Korea · Asia · Latin America · Europe</div>
-    </div>
-    <figure class="rx-hero-media rx-reveal rx-d3">
-      <div class="rx-frame">
-        <video id="hero-vid" autoplay muted loop playsinline preload="metadata">
-          <source src="https://dl.dropboxusercontent.com/scl/fi/rnzfl1481bp1kp6u69cgv/Timeline-2.mp4?rlkey=nky540fz3d378bfrsopcav6xy&st=a8wznj0p" type="video/mp4">
-        </video>
-      </div>
-      <figcaption class="rx-vidcap"><span class="rx-vidcap-dash"></span>That's me, <em>Ivan Orozco</em></figcaption>
-    </figure>
+<!-- ===== RX HERO — full-bleed cinematic video background ===== -->
+<section id="inicio" class="rx-hero rx-hero--video">
+  <div class="rx-hero-bg">
+    <video id="hero-vid" autoplay muted loop playsinline preload="metadata">
+      <source src="https://dl.dropboxusercontent.com/scl/fi/rnzfl1481bp1kp6u69cgv/Timeline-2.mp4?rlkey=nky540fz3d378bfrsopcav6xy&st=a8wznj0p" type="video/mp4">
+    </video>
+    <div class="rx-hero-scrim"></div>
   </div>
+  <div class="rx-hero-inner">
+    <span class="rx-eyebrow rx-reveal rx-d1">Post-production · Marketing · Consulting</span>
+    <h1 class="rx-h1"><span class="rx-tl"><span class="rx-tli">YOUR BRAND</span></span><span class="rx-tl"><span class="rx-tli">DESERVES</span></span><span class="rx-tl"><span class="rx-tli">PRESENCE</span></span><span class="rx-tl"><span class="rx-tli"><span class="gold">THAT IMPACTS</span></span></span></h1>
+    <p class="rx-lead rx-reveal rx-d3">Websites, payment gateways, post-production, video editing and marketing. We help brands, companies and organizations build an online presence and sell more.</p>
+    <div class="rx-hero-actions rx-reveal rx-d4">
+      <a href="#precios" class="rx-btn rx-btn--light">View plans &amp; get started <span class="rx-arw">→</span></a>
+      <a href="#" class="rx-btn rx-btn--ghost-light pf-open">View portfolio</a>
+    </div>
+    <div class="rx-hero-credit rx-reveal rx-d5">Directed by <strong>Ivan Orozco</strong> · Korea · Asia · Latin America · Europe</div>
+  </div>
+  <div class="rx-scroll-ind" aria-hidden="true">Scroll</div>
 </section>
 <div class="rx-trust-label"><span class="rx-eyebrow rx-eyebrow--center">Trusted by brands &amp; organizations</span></div>
 
@@ -2540,6 +2581,15 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
   }
   function run(){ setTimeout(wrapTitle,150); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+})();
+</script>
+<script>
+/* RX: transparent hero nav -> solid once scrolled past the video hero */
+(function(){
+  var nav=document.querySelector('nav'); var hero=document.getElementById('inicio');
+  if(!nav||!hero) return;
+  function upd(){ try{ if(hero.getBoundingClientRect().bottom<=72) nav.classList.add('rx-nav-solid'); else nav.classList.remove('rx-nav-solid'); }catch(e){} }
+  upd(); window.addEventListener('scroll',upd,{passive:true}); window.addEventListener('resize',upd);
 })();
 </script>
 </body>
