@@ -1412,13 +1412,13 @@ nav.rx-nav-solid .btn.bg{background:var(--rx-ink)!important;color:#fff!important
 #payment-form .btn,#payment-form button[type="submit"]{background:#0c0c0d!important;color:#fff!important;border:none!important}
 #payment-form .btn::before{display:none!important}
 /* ===== A4 portfolio sub-page — smooth fluid open/close (no clip/3D jank) ===== */
-.pf-view{display:flex!important;transform:translateY(100%);pointer-events:none;transition:transform .6s var(--rx-ease)}
-.pf-view.open{transform:translateY(0)!important;pointer-events:auto!important}
-.pf-view.animating{transform:translateY(0)!important}
+.pf-view{display:flex!important;transform:translateY(100%);pointer-events:none}
+.pf-view.open{transform:translateY(0);pointer-events:auto}
+.pf-view.animating{transform:translateY(0)}
 
 /* ===== B pricing sub-page (full-screen sheet, smooth) ===== */
-.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;transform:translateY(100%);pointer-events:none;transition:transform .55s var(--rx-ease)}
-.rx-sheet.open{transform:translateY(0)!important;pointer-events:auto!important}
+.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;transform:translateY(100%);pointer-events:none}
+.rx-sheet.open{transform:translateY(0);pointer-events:auto}
 @keyframes rxSheetIn{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:none}}
 @keyframes rxSheetOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(26px)}}
 .rx-sheet-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -2497,7 +2497,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
   var scroller=view.querySelector('.pf-scroll');
   function openPF(){
     if(view.classList.contains('open')) return;
-    view.classList.remove('open');requestAnimationFrame(function(){requestAnimationFrame(function(){view.classList.add('open','animating');});}); view.setAttribute('aria-hidden','false');
+    view.classList.add('open','animating');try{view.animate([{transform:'translateY(100%)'},{transform:'translateY(0)'}],{duration:560,easing:'cubic-bezier(.22,1,.36,1)'});}catch(e){} view.setAttribute('aria-hidden','false');
     document.body.classList.add('pf-locked','pf-anim');
     try{ if(window.__applyI18n) window.__applyI18n(view); }catch(e){}
     try{ if(window.__initCounters) window.__initCounters(); }catch(e){}
@@ -2640,8 +2640,8 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
 <script>
 /* RX: pricing sub-page open/close (smooth, no scroll on hero) */
 (function(){
-  function open(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('open');});});el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
-  function close(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');el.setAttribute('aria-hidden','true');document.body.classList.remove('rx-sheet-open');}
+  function open(id){var el=document.getElementById(id);if(!el)return;el.classList.add('open');el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{el.animate([{transform:'translateY(100%)'},{transform:'translateY(0)'}],{duration:520,easing:'cubic-bezier(.22,1,.36,1)'});}catch(e){}try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
+  function close(id){var el=document.getElementById(id);if(!el)return;el.setAttribute('aria-hidden','true');document.body.classList.remove('rx-sheet-open');try{var a=el.animate([{transform:'translateY(0)'},{transform:'translateY(100%)'}],{duration:420,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});a.onfinish=function(){el.classList.remove('open');a.cancel();};}catch(e){el.classList.remove('open');}}
   window.rxOpenSheet=open;window.rxCloseSheet=close;
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close('rx-pricing');});
 })();
