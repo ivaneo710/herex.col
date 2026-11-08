@@ -2497,7 +2497,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
   var scroller=view.querySelector('.pf-scroll');
   function openPF(){
     if(view.classList.contains('open')) return;
-    view.classList.remove('open');void view.offsetWidth;view.classList.add('open','animating'); view.setAttribute('aria-hidden','false');
+    view.classList.remove('open');requestAnimationFrame(function(){requestAnimationFrame(function(){view.classList.add('open','animating');});}); view.setAttribute('aria-hidden','false');
     document.body.classList.add('pf-locked','pf-anim');
     try{ if(window.__applyI18n) window.__applyI18n(view); }catch(e){}
     try{ if(window.__initCounters) window.__initCounters(); }catch(e){}
@@ -2640,7 +2640,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
 <script>
 /* RX: pricing sub-page open/close (smooth, no scroll on hero) */
 (function(){
-  function open(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');void el.offsetWidth;el.classList.add('open');el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
+  function open(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('open');});});el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
   function close(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');el.setAttribute('aria-hidden','true');document.body.classList.remove('rx-sheet-open');}
   window.rxOpenSheet=open;window.rxCloseSheet=close;
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close('rx-pricing');});
