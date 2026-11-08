@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="color-scheme" content="light">
 <title>HEREX — Producción de Contenido Digital | Ivan Orozco</title>
 <meta name="description" content="Postproducción, edición y estrategia de contenido para marcas, empresas y personal brands. Hecho por Ivan Orozco.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1289,6 +1290,13 @@ figure.rx-hero-media{margin:0}
 .rx-vidcap{display:flex;align-items:center;gap:11px;margin:16px 0 0;font-family:var(--rx-fs);font-size:13.5px;color:var(--rx-gray);letter-spacing:.01em}
 .rx-vidcap-dash{width:26px;height:1px;background:var(--rx-ink);opacity:.42;flex:none}
 .rx-vidcap em{font-family:var(--rx-fd);font-style:italic;font-weight:500;font-size:16.5px;color:var(--rx-ink);letter-spacing:0}
+/* force light scheme — stop Android/Telegram webview from auto-darkening the white design */
+html{color-scheme:light}
+:root{color-scheme:light}
+/* mobile nav: kill any legacy gold pill/underline on the Portafolio link, keep it a clean text link */
+nav .nl.nl-show,nav .nl.nl-show:hover,nav .nl.nl-show:active,nav .nl.nl-show:focus{background:none!important;background-color:transparent!important;color:var(--rx-gray)!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:4px 0!important}
+nav .nl.nl-show:hover{color:var(--rx-ink)!important}
+nav .nl.nl-show::after{display:none!important}
 .rx-trust-label{text-align:center;background:#fff;padding:48px 0 24px}
 
 /* marquee -> monochrome trusted-by */
@@ -2517,6 +2525,20 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
     },{threshold:0.25});
     sec.querySelectorAll('video').forEach(function(v){ vio.observe(v); });
   } else { mount(); }
+})();
+</script>
+<script>
+/* RX: keep the hero title line-reveal working in every language (re-wrap after i18n swap) */
+(function(){
+  function wrapTitle(){
+    var h1=document.querySelector('.rx-h1'); if(!h1) return;
+    if(h1.querySelector('.rx-tl')) return; /* already wrapped (Spanish markup) */
+    var parts=h1.innerHTML.split(/<br\s*\/?>/i);
+    if(parts.length<2) return;
+    h1.innerHTML=parts.map(function(p){return '<span class="rx-tl"><span class="rx-tli">'+p+'</span></span>';}).join('');
+  }
+  function run(){ setTimeout(wrapTitle,150); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
 })();
 </script>
 </body>
