@@ -1412,13 +1412,16 @@ nav.rx-nav-solid .btn.bg{background:var(--rx-ink)!important;color:#fff!important
 #payment-form .btn,#payment-form button[type="submit"]{background:#0c0c0d!important;color:#fff!important;border:none!important}
 #payment-form .btn::before{display:none!important}
 /* ===== A4 portfolio sub-page — smooth fluid open/close (no clip/3D jank) ===== */
-.pf-view{display:flex!important;visibility:hidden;opacity:0;transform:translateY(30px) scale(.996);pointer-events:none;transition:opacity .55s var(--rx-ease),transform .6s var(--rx-ease),visibility 0s linear .6s}
-.pf-view.open{visibility:visible!important;opacity:1!important;transform:none!important;pointer-events:auto!important;transition:opacity .55s var(--rx-ease),transform .6s var(--rx-ease),visibility 0s linear 0s}
-.pf-view.animating{animation:none!important}
+.pf-view{display:none!important}
+.pf-view.open{display:flex!important;animation:rxSheetIn .55s var(--rx-ease) both!important}
+.pf-view.animating{animation:rxSheetIn .55s var(--rx-ease) both!important}
 
 /* ===== B pricing sub-page (full-screen sheet, smooth) ===== */
-.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;visibility:hidden;opacity:0;transform:translateY(34px);pointer-events:none;transition:opacity .5s var(--rx-ease),transform .6s var(--rx-ease),visibility 0s linear .6s}
-.rx-sheet.open{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .5s var(--rx-ease),transform .6s var(--rx-ease),visibility 0s linear 0s}
+.rx-sheet{position:fixed;inset:0;z-index:1500;background:#0a0a0c;display:none}
+.rx-sheet.open{display:block;animation:rxSheetIn .55s var(--rx-ease) both}
+.rx-sheet.rx-closing{display:block;animation:rxSheetOut .42s var(--rx-ease) both}
+@keyframes rxSheetIn{from{opacity:0;transform:translateY(42px)}to{opacity:1;transform:none}}
+@keyframes rxSheetOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(26px)}}
 .rx-sheet-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .rx-sheet-close{position:fixed;top:16px;right:16px;z-index:1600;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(20,20,24,.55);color:#fff;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:background .3s var(--rx-ease),color .3s,transform .4s var(--rx-ease)}
 .rx-sheet-close:hover{background:#fff;color:#0c0c0d;transform:rotate(90deg)}
@@ -2639,7 +2642,7 @@ window.addEventListener('load',()=>{const c=document.getElementById('p-crecimien
 /* RX: pricing sub-page open/close (smooth, no scroll on hero) */
 (function(){
   function open(id){var el=document.getElementById(id);if(!el)return;el.classList.add('open');el.setAttribute('aria-hidden','false');document.body.classList.add('rx-sheet-open');var s=el.querySelector('.rx-sheet-scroll');if(s)s.scrollTop=0;try{if(window.__applyI18n)window.__applyI18n(el);}catch(e){}}
-  function close(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('open');el.setAttribute('aria-hidden','true');document.body.classList.remove('rx-sheet-open');}
+  function close(id){var el=document.getElementById(id);if(!el)return;el.classList.add('rx-closing');document.body.classList.remove('rx-sheet-open');setTimeout(function(){el.classList.remove('open','rx-closing');el.setAttribute('aria-hidden','true');},430);}
   window.rxOpenSheet=open;window.rxCloseSheet=close;
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close('rx-pricing');});
 })();
